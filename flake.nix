@@ -47,11 +47,12 @@
               cargo = pkgs.rustToolchain;
               rustc = pkgs.rustToolchain;
             };
+            securityFramework = if pkgs.stdenv.isDarwin then [ pkgs.darwin.apple_sdk.frameworks.Security ] else [];
           in
           rustPlatform.buildRustPackage {
             name = "rizzybox";
             src = ./.;
-            nativeBuildInputs = [ pkgs.darwin.apple_sdk.frameworks.Security ];
+            nativeBuildInputs = securityFramework;
             cargoLock = {
               lockFile = ./Cargo.lock;
             };
