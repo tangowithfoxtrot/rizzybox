@@ -1,3 +1,5 @@
+use std::io::IsTerminal;
+
 use bat::PrettyPrinter;
 
 pub(crate) fn echo_command(
@@ -35,6 +37,7 @@ pub(crate) fn echo_command(
         .input_from_bytes(text.as_bytes())
         .language(language)
         .theme(theme)
+        .colored_output(std::io::stdout().is_terminal())
         .show_nonprintable(*enable_backslash_escapes && *disable_backslash_escapes)
         .print()
         .unwrap();

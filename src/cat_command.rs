@@ -1,3 +1,5 @@
+use std::io::IsTerminal;
+
 use bat::PrettyPrinter;
 
 pub(crate) fn cat_command(file: &[String], language: &str, theme: &str) {
@@ -7,6 +9,7 @@ pub(crate) fn cat_command(file: &[String], language: &str, theme: &str) {
             .input_file(file)
             .language(language)
             .theme(theme)
+            .colored_output(std::io::stdout().is_terminal())
             .print()
             .unwrap();
     }
