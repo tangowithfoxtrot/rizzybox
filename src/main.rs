@@ -5,10 +5,12 @@ use clap::{CommandFactory, Parser, Subcommand};
 use clap_complete::Shell;
 use echo_command::echo_command;
 use env_command::env_command;
+use yes_command::yes_command;
 
 mod cat_command;
 mod echo_command;
 mod env_command;
+mod yes_command;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -44,6 +46,10 @@ enum Commands {
         theme: String,
     },
     Env {},
+    Yes {
+        #[arg(default_value = "y")]
+        text: String,
+    },
 }
 
 fn main() {
@@ -51,9 +57,10 @@ fn main() {
     let binary_name = args.first().map(|s| s.as_str()).unwrap_or_default();
 
     // determine if invoked as subcommand directly: `/bin/echo`
-    let args = if binary_name.ends_with("echo")
+    let args = if binary_name.ends_with("cat")
+        || binary_name.ends_with("echo")
         || binary_name.ends_with("env")
-        || binary_name.ends_with("cat")
+        || binary_name.ends_with("yes")
     {
         // shift binary name to subcommand name
         let subcommand_name = binary_name.split('/').last().unwrap_or(binary_name);
@@ -104,6 +111,9 @@ fn main() {
             }
             Commands::Env {} => {
                 env_command();
+            }
+            Commands::Yes { text } => {
+                yes_command(&text);
             }
         }
     }
