@@ -19,6 +19,13 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    Cat {
+        file: String,
+        #[arg(long = "language", short = 'l', default_value = "txt")]
+        language: String,
+        #[arg(long = "theme", short = 't', default_value = "Dracula")]
+        theme: String,
+    },
     Completions {
         shell: Option<Shell>,
     },
@@ -37,9 +44,6 @@ enum Commands {
         theme: String,
     },
     Env {},
-    Cat {
-        file: String,
-    },
 }
 
 fn main() {
@@ -64,6 +68,13 @@ fn main() {
 
     if let Some(command) = cli.command {
         match command {
+            Commands::Cat {
+                file,
+                language,
+                theme,
+            } => {
+                cat_command(&file, &language, &theme);
+            }
             Commands::Completions { shell } => {
                 // FIXME: this probably won't work when commands are invoked in their symlinked form (`echo`, `env`, `cat`)
                 let Some(shell) = shell.or_else(Shell::from_env) else {
@@ -93,9 +104,6 @@ fn main() {
             }
             Commands::Env {} => {
                 env_command();
-            }
-            Commands::Cat { file } => {
-                cat_command(&file);
             }
         }
     }
