@@ -5,11 +5,13 @@ use clap::{CommandFactory, Parser, Subcommand};
 use clap_complete::Shell;
 use echo_command::echo_command;
 use env_command::env_command;
+use which_command::which_command;
 use yes_command::yes_command;
 
 mod cat_command;
 mod echo_command;
 mod env_command;
+mod which_command;
 mod yes_command;
 
 #[derive(Parser)]
@@ -46,6 +48,13 @@ enum Commands {
         theme: String,
     },
     Env {},
+    Which {
+        #[arg(short = 'a', default_value_t = false)]
+        all_occurrences: bool,
+        bin: String,
+        #[arg(short = 's', default_value_t = false)]
+        silent: bool,
+    },
     Yes {
         #[arg(default_value = "y")]
         text: String,
@@ -60,6 +69,7 @@ fn main() {
     let args = if binary_name.ends_with("cat")
         || binary_name.ends_with("echo")
         || binary_name.ends_with("env")
+        || binary_name.ends_with("which")
         || binary_name.ends_with("yes")
     {
         // shift binary name to subcommand name
@@ -111,6 +121,13 @@ fn main() {
             }
             Commands::Env {} => {
                 env_command();
+            }
+            Commands::Which {
+                all_occurrences,
+                bin,
+                silent,
+            } => {
+                which_command(&all_occurrences, &bin, &silent);
             }
             Commands::Yes { text } => {
                 yes_command(&text);
