@@ -24,7 +24,7 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     Cat {
-        file: String,
+        file: Vec<String>,
         #[arg(long = "language", short = 'l', default_value = "txt")]
         language: String,
         #[arg(long = "theme", short = 't', default_value = "Dracula")]
