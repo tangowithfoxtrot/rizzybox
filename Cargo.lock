@@ -717,6 +717,7 @@ dependencies = [
  "bat",
  "clap",
  "clap_complete",
+ "libc",
 ]
 
 [[package]]

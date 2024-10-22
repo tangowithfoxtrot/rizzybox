@@ -7,3 +7,4 @@ edition = "2021"
 bat = "0.24.0"
 clap = { version = "4.5.20", features = ["derive"] }
 clap_complete = "4.5.33"
+libc = "0.2.161"
