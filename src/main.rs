@@ -1,22 +1,19 @@
 use std::env;
 
-use cat_command::cat_command;
 use clap::{CommandFactory, Parser, Subcommand};
 use clap_complete::Shell;
-use echo_command::echo_command;
-use env_command::env_command;
-use which_command::which_command;
-use yes_command::yes_command;
 
-mod cat_command;
-mod echo_command;
-mod env_command;
-mod which_command;
-mod yes_command;
+use crate::command::{
+    cat::*, clear::*, echo::*, env::*, r#false::*, r#true::*, uname::*, which::*, yes::*,
+};
+
+mod command;
 
 /// Binaries that can be installed with --install
 /// Example: ln -sf /full/path/to/rizzybox /usr/local/bin/cat
-const INSTALLABLE_BINS: [&str; 5] = ["cat", "echo", "env", "which", "yes"];
+const INSTALLABLE_BINS: [&str; 10] = [
+    "arch", "cat", "clear", "echo", "env", "false", "true", "uname", "which", "yes",
+];
 
 #[derive(Parser)]
 #[command(
@@ -47,6 +44,7 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    Arch {},
     Cat {
         file: Vec<String>,
         #[arg(long = "language", short = 'l', default_value = "txt")]
@@ -54,6 +52,7 @@ enum Commands {
         #[arg(long = "theme", short = 't', default_value = "Dracula")]
         theme: String,
     },
+    Clear {},
     Completions {
         shell: Option<Shell>,
     },
@@ -72,6 +71,24 @@ enum Commands {
         theme: String,
     },
     Env {},
+    False {},
+    True {},
+    Uname {
+        #[arg(long = "all", short = 'a', default_value_t = false)]
+        all: bool,
+        #[arg(long = "kernel", short = 's', default_value_t = true)]
+        kernel: bool,
+        #[arg(long = "nodename", short = 'n', default_value_t = false)]
+        nodename: bool,
+        #[arg(long = "kernel-release", short = 'r', default_value_t = false)]
+        kernel_release: bool,
+        #[arg(long = "kernel-version", short = 'v', default_value_t = false)]
+        kernel_version: bool,
+        #[arg(long = "machine", short = 'm', default_value_t = false)]
+        machine: bool,
+        #[arg(long = "operating-system", short = 'o', default_value_t = false)]
+        operating_system: bool,
+    },
     Which {
         #[arg(short = 'a', default_value_t = false)]
         all_occurrences: bool,
@@ -117,10 +134,14 @@ fn main() {
                 bin,
             )
         }
+        std::process::exit(0);
     }
 
     if let Some(command) = cli.command {
         match command {
+            Commands::Arch {} => {
+                arch_command();
+            }
             Commands::Cat {
                 file,
                 language,
@@ -128,6 +149,7 @@ fn main() {
             } => {
                 cat_command(&file, &language, &theme);
             }
+            Commands::Clear {} => clear_command(),
             Commands::Completions { shell } => {
                 // FIXME: this probably won't work when commands are invoked in their symlinked form (`echo`, `env`, `cat`)
                 let Some(shell) = shell.or_else(Shell::from_env) else {
@@ -157,6 +179,31 @@ fn main() {
             }
             Commands::Env {} => {
                 env_command();
+            }
+            Commands::False {} => {
+                false_command();
+            }
+            Commands::True {} => {
+                true_command();
+            }
+            Commands::Uname {
+                all,
+                kernel,
+                nodename,
+                kernel_release,
+                kernel_version,
+                machine,
+                operating_system,
+            } => {
+                uname_command(
+                    &all,
+                    &kernel,
+                    &nodename,
+                    &kernel_release,
+                    &kernel_version,
+                    &machine,
+                    &operating_system,
+                );
             }
             Commands::Which {
                 all_occurrences,
