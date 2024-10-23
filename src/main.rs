@@ -138,9 +138,8 @@ fn main() {
         println!("export RIZZYBOX_INSTALL_DIR=/usr/local/bin # change this to the desired installation path");
         for bin in INSTALLABLE_BINS.iter() {
             println!(
-                "ln -sf {}/{} $RIZZYBOX_INSTALL_DIR/{}",
-                std::env::current_dir().unwrap().display(),
-                args.first().unwrap(),
+                "ln -sf {} $RIZZYBOX_INSTALL_DIR/{}",
+                std::env::current_exe().unwrap().display(),
                 bin,
             )
         }
