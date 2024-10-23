@@ -7,8 +7,8 @@ pub(crate) fn which_command(all_occurrences: &bool, bin: &str, silent: &bool) {
     let mut was_found: bool = false;
     for path in paths {
         let full_path = format!("{}/{}", path, bin);
-        match std::fs::exists(&full_path) {
-            Ok(true) => {
+        match std::path::Path::new(&full_path).exists() {
+            true => {
                 was_found = true;
                 if !*silent {
                     println!("{}", &full_path);
