@@ -4,15 +4,16 @@ use clap::{CommandFactory, Parser, Subcommand};
 use clap_complete::Shell;
 
 use crate::command::{
-    cat::*, clear::*, echo::*, env::*, r#false::*, r#true::*, uname::*, which::*, yes::*,
+    basename::*, cat::*, clear::*, echo::*, env::*, r#false::*, r#true::*, uname::*, which::*,
+    yes::*,
 };
 
 mod command;
 
 /// Binaries that can be installed with --install
 /// Example: ln -sf /full/path/to/rizzybox /usr/local/bin/cat
-const INSTALLABLE_BINS: [&str; 10] = [
-    "arch", "cat", "clear", "echo", "env", "false", "true", "uname", "which", "yes",
+const INSTALLABLE_BINS: [&str; 11] = [
+    "arch", "basename", "cat", "clear", "echo", "env", "false", "true", "uname", "which", "yes",
 ];
 
 #[derive(Parser)]
@@ -45,6 +46,15 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     Arch {},
+    Basename {
+        #[arg(long = "multiple", short = 'a')]
+        multiple: bool,
+        name: Vec<String>,
+        #[arg(long = "suffix", short = 's')]
+        suffix: Option<String>,
+        #[arg(long = "zero", short = 'z')]
+        zero: bool,
+    },
     Cat {
         file: Vec<String>,
         #[arg(long = "language", short = 'l', default_value = "txt")]
@@ -141,6 +151,14 @@ fn main() {
         match command {
             Commands::Arch {} => {
                 arch_command();
+            }
+            Commands::Basename {
+                multiple,
+                name,
+                suffix,
+                zero,
+            } => {
+                basename_command(&multiple, &name, &suffix, &zero);
             }
             Commands::Cat {
                 file,

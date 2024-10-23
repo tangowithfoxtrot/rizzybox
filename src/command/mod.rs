@@ -1,3 +1,4 @@
+pub(crate) mod basename;
 pub(crate) mod cat;
 pub(crate) mod clear;
 pub(crate) mod echo;
