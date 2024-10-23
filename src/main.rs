@@ -39,27 +39,44 @@ struct Cli {
     #[command(subcommand)]
     command: Option<Commands>,
 
-    #[arg(long)]
+    #[arg(long, help = "print install script")]
     install: bool,
+
+    #[arg(long, help = "list included binaries")]
+    list: bool,
 }
 
 #[derive(Subcommand)]
 enum Commands {
     Arch {},
     Basename {
-        #[arg(long = "multiple", short = 'a')]
+        #[arg(
+            long = "multiple",
+            short = 'a',
+            help = "support multiple arguments and treat each as a NAME"
+        )]
         multiple: bool,
         name: Vec<String>,
-        #[arg(long, short)]
+        #[arg(long, short, help = "remove a trailing SUFFIX; implies -a")]
         suffix: Option<String>,
-        #[arg(long, short)]
+        #[arg(long, short, help = "end each output line with NUL, not newline")]
         zero: bool,
     },
     Cat {
         file: Vec<String>,
-        #[arg(long, short, default_value = "txt")]
+        #[arg(
+            long,
+            short,
+            default_value = "txt",
+            help = "language to use for syntax highlighting"
+        )]
         language: String,
-        #[arg(long, short, default_value = "Dracula")]
+        #[arg(
+            long,
+            short,
+            default_value = "Dracula",
+            help = "theme to use for colored output"
+        )]
         theme: String,
     },
     Clear {},
@@ -67,43 +84,99 @@ enum Commands {
         shell: Option<Shell>,
     },
     Echo {
-        #[arg(short = 'E', default_value_t = true)]
+        #[arg(
+            short = 'E',
+            default_value_t = true,
+            help = "disable interpretation of backslash escapes"
+        )]
         disable_backslash_escapes: bool,
-        #[arg(short = 'e', default_value_t = false)]
+        #[arg(
+            short = 'e',
+            default_value_t = false,
+            help = "enable interpretation of backslash escapes"
+        )]
         enable_backslash_escapes: bool,
-        #[arg(long, short, default_value = "txt")]
+        #[arg(
+            long,
+            short,
+            default_value = "txt",
+            help = "language to use for syntax highlighting"
+        )]
         language: String,
-        #[arg(long, short, default_value_t = false)]
+        #[arg(
+            long,
+            short,
+            default_value_t = false,
+            help = "do not output the trailing newline"
+        )]
         nonewline: bool,
         #[arg(default_value = "")]
-        text: String,
-        #[arg(long, short, default_value = "Dracula")]
+        string: String,
+        #[arg(
+            long,
+            short,
+            default_value = "Dracula",
+            help = "theme to use for colored output"
+        )]
         theme: String,
     },
     Env {},
     False {},
     True {},
     Uname {
-        #[arg(long, short, default_value_t = false)]
+        #[arg(long, short, default_value_t = false, help = "print all information")]
         all: bool,
-        #[arg(long, short, default_value_t = true)]
+        #[arg(long, short, default_value_t = true, help = "print the kernel name")]
         kernel: bool,
-        #[arg(long, short = 'n', default_value_t = false)]
+        #[arg(
+            long,
+            short = 'n',
+            default_value_t = false,
+            help = "print the network node hostname"
+        )]
         nodename: bool,
-        #[arg(long = "kernel-release", short = 'r', default_value_t = false)]
+        #[arg(
+            long = "kernel-release",
+            short = 'r',
+            default_value_t = false,
+            help = "print the kernel release"
+        )]
         kernel_release: bool,
-        #[arg(long = "kernel-version", short = 'v', default_value_t = false)]
+        #[arg(
+            long = "kernel-version",
+            short = 'v',
+            default_value_t = false,
+            help = "print the kernel version"
+        )]
         kernel_version: bool,
-        #[arg(long, short, default_value_t = false)]
+        #[arg(
+            long,
+            short,
+            default_value_t = false,
+            help = "print the machine hardware name"
+        )]
         machine: bool,
-        #[arg(long, short, default_value_t = false)]
+        #[arg(
+            long,
+            short,
+            default_value_t = false,
+            help = "print the operating system"
+        )]
         operating_system: bool,
     },
     Which {
-        #[arg(short, default_value_t = false)]
+        #[arg(
+            short,
+            default_value_t = false,
+            help = "print all matching pathnames of each argument"
+        )]
         all_occurrences: bool,
         bin: String,
-        #[arg(short, default_value_t = false)]
+        #[arg(
+            short,
+            default_value_t = false,
+            help = "silently return 0 if all of the executables were found or 1 otherwise"
+        )]
         silent: bool,
     },
     Yes {
@@ -146,6 +219,13 @@ fn main() {
         std::process::exit(0);
     }
 
+    if cli.list {
+        for bin in INSTALLABLE_BINS.iter() {
+            print!("{bin} ");
+        }
+        println!();
+    }
+
     if let Some(command) = cli.command {
         match command {
             Commands::Arch {} => {
@@ -182,7 +262,7 @@ fn main() {
                 enable_backslash_escapes,
                 language,
                 nonewline,
-                text,
+                string: text,
                 theme,
             } => {
                 echo_command(
