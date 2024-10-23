@@ -50,16 +50,16 @@ enum Commands {
         #[arg(long = "multiple", short = 'a')]
         multiple: bool,
         name: Vec<String>,
-        #[arg(long = "suffix", short = 's')]
+        #[arg(long, short)]
         suffix: Option<String>,
-        #[arg(long = "zero", short = 'z')]
+        #[arg(long, short)]
         zero: bool,
     },
     Cat {
         file: Vec<String>,
-        #[arg(long = "language", short = 'l', default_value = "txt")]
+        #[arg(long, short, default_value = "txt")]
         language: String,
-        #[arg(long = "theme", short = 't', default_value = "Dracula")]
+        #[arg(long, short, default_value = "Dracula")]
         theme: String,
     },
     Clear {},
@@ -71,39 +71,39 @@ enum Commands {
         disable_backslash_escapes: bool,
         #[arg(short = 'e', default_value_t = false)]
         enable_backslash_escapes: bool,
-        #[arg(long = "language", short = 'l', default_value = "txt")]
+        #[arg(long, short, default_value = "txt")]
         language: String,
-        #[arg(long = "nonewline", short = 'n', default_value_t = false)]
+        #[arg(long, short, default_value_t = false)]
         nonewline: bool,
         #[arg(default_value = "")]
         text: String,
-        #[arg(long = "theme", short = 't', default_value = "Dracula")]
+        #[arg(long, short, default_value = "Dracula")]
         theme: String,
     },
     Env {},
     False {},
     True {},
     Uname {
-        #[arg(long = "all", short = 'a', default_value_t = false)]
+        #[arg(long, short, default_value_t = false)]
         all: bool,
-        #[arg(long = "kernel", short = 's', default_value_t = true)]
+        #[arg(long, short, default_value_t = true)]
         kernel: bool,
-        #[arg(long = "nodename", short = 'n', default_value_t = false)]
+        #[arg(long, short = 'n', default_value_t = false)]
         nodename: bool,
         #[arg(long = "kernel-release", short = 'r', default_value_t = false)]
         kernel_release: bool,
         #[arg(long = "kernel-version", short = 'v', default_value_t = false)]
         kernel_version: bool,
-        #[arg(long = "machine", short = 'm', default_value_t = false)]
+        #[arg(long, short, default_value_t = false)]
         machine: bool,
-        #[arg(long = "operating-system", short = 'o', default_value_t = false)]
+        #[arg(long, short, default_value_t = false)]
         operating_system: bool,
     },
     Which {
-        #[arg(short = 'a', default_value_t = false)]
+        #[arg(short, default_value_t = false)]
         all_occurrences: bool,
         bin: String,
-        #[arg(short = 's', default_value_t = false)]
+        #[arg(short, default_value_t = false)]
         silent: bool,
     },
     Yes {
