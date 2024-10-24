@@ -77,27 +77,31 @@ pub(crate) fn uname_command(
             } else {
                 let mut to_print = HashSet::new();
                 if *kernel {
-                    to_print.insert(format!("{} ", utsname.sysname.clone()));
+                    to_print.insert(utsname.sysname.clone());
                 }
                 if *nodename {
-                    to_print.insert(format!("{} ", utsname.nodename));
+                    to_print.insert(utsname.nodename);
                 }
                 if *kernel_release {
-                    to_print.insert(format!("{} ", utsname.release));
+                    to_print.insert(utsname.release);
                 }
                 if *kernel_version {
-                    to_print.insert(format!("{} ", utsname.version));
+                    to_print.insert(utsname.version);
                 }
                 if *machine {
-                    to_print.insert(format!("{} ", utsname.machine));
+                    to_print.insert(utsname.machine);
                 }
                 if *operating_system {
-                    to_print.insert(format!("{} ", utsname.sysname));
+                    to_print.insert(utsname.sysname);
                 }
-                for info in to_print {
-                    print!("{info}");
-                }
-                println!();
+                println!(
+                    "{}",
+                    to_print
+                        .into_iter()
+                        .collect::<Vec<String>>()
+                        .join(" ")
+                        .trim_end()
+                );
                 std::process::exit(0);
             }
         }
