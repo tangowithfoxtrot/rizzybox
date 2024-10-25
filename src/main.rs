@@ -198,7 +198,7 @@ enum Commands {
         all_occurrences: bool,
 
         #[arg(help = "command to search for in PATH")]
-        bin: String,
+        command: String,
 
         #[arg(
             short,
@@ -333,10 +333,10 @@ fn main() -> Result<()> {
             }
             Commands::Which {
                 all_occurrences,
-                bin,
+                command,
                 silent,
             } => {
-                which_command(&all_occurrences, &bin, &silent)?;
+                which_command(&all_occurrences, &command, &silent)?;
             }
             Commands::Yes { text } => {
                 yes_command(&text)?;

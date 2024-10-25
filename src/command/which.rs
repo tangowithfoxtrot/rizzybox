@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-pub(crate) fn which_command(all_occurrences: &bool, bin: &str, silent: &bool) -> Result<()> {
+pub(crate) fn which_command(all_occurrences: &bool, command: &str, silent: &bool) -> Result<()> {
     let path = std::env::var("PATH").unwrap();
 
     let delimiter = ":";
@@ -8,7 +8,7 @@ pub(crate) fn which_command(all_occurrences: &bool, bin: &str, silent: &bool) ->
 
     let mut was_found: bool = false;
     for path in paths {
-        let full_path = format!("{}/{}", path, bin);
+        let full_path = format!("{}/{}", path, command);
         match std::path::Path::new(&full_path).exists() {
             true => {
                 was_found = true;
