@@ -231,7 +231,7 @@ fn main() -> Result<()> {
         args
     };
 
-    let cli = Cli::parse_from(args.clone());
+    let cli = Cli::parse_from(args);
     // TODO: write actual install logic instead of providing a script
     if cli.install {
         println!("# to install rizzybox bins, paste the following in your shell:\n");
