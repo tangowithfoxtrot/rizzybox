@@ -126,7 +126,12 @@ enum Commands {
     Uname {
         #[arg(long, short, default_value_t = false, help = "print all information")]
         all: bool,
-        #[arg(long, short, default_value_t = true, help = "print the kernel name")]
+        #[arg(
+            long,
+            short = 's',
+            default_value_t = true,
+            help = "print the kernel name"
+        )]
         kernel: bool,
         #[arg(
             long,
