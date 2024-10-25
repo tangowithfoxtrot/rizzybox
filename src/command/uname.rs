@@ -1,3 +1,4 @@
+use anyhow::Result;
 use libc::uname;
 use std::{collections::HashSet, env::consts::OS, ffi::CStr};
 
@@ -48,10 +49,17 @@ impl UtsName {
     }
 }
 
-pub(crate) fn arch_command() {
-    uname_command(&false, &false, &false, &false, &false, &true, &false);
+pub(crate) fn arch_command() -> Result<()> {
+    let _ = uname_command(&false, &false, &false, &false, &false, &true, &false);
+    Ok(())
 }
 
+// rizzybox uname:
+// user@hostname ~> uname -a
+// Linux hostname 6.1.0-26-cloud-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.112-1 (2024-09-30) x86_64 Linux
+// GNU uname:
+// user@hostname ~>  /usr/bin/uname -a
+// Linux hostname 6.1.0-26-cloud-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.112-1 (2024-09-30) x86_64 GNU/Linux
 pub(crate) fn uname_command(
     all: &bool,
     kernel: &bool,
@@ -60,7 +68,7 @@ pub(crate) fn uname_command(
     kernel_version: &bool,
     machine: &bool,
     operating_system: &bool,
-) {
+) -> Result<()> {
     match UtsName::new() {
         Ok(utsname) => {
             if *all {
@@ -73,7 +81,7 @@ pub(crate) fn uname_command(
                     utsname.machine,
                     OS
                 );
-                std::process::exit(0);
+                return Ok(());
             } else {
                 let mut to_print = HashSet::new();
                 // FIXME: this is stinky. do something better to workaround the fact that *kernel is a default arg
@@ -117,12 +125,11 @@ pub(crate) fn uname_command(
                         .join(" ")
                         .trim_end()
                 );
-                std::process::exit(0);
             }
         }
         Err(e) => {
             eprintln!("{}", e);
-            std::process::exit(1);
         }
     }
+    Ok(())
 }

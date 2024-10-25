@@ -1,7 +1,8 @@
+use anyhow::Result;
 use bat::PrettyPrinter;
 use std::collections::HashMap;
 
-pub(crate) fn env_command() {
+pub(crate) fn env_command() -> Result<()> {
     let mut environment: HashMap<String, String> = HashMap::new();
     let mut kv_pairs = String::new();
 
@@ -16,4 +17,5 @@ pub(crate) fn env_command() {
         .language("env")
         .print()
         .unwrap();
+    Ok(())
 }

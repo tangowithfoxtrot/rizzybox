@@ -1,9 +1,11 @@
+use anyhow::Result;
+
 pub(crate) fn basename_command(
     mut multiple: &bool,
     name: &[String],
     suffix: &Option<String>,
     zero: &bool,
-) {
+) -> Result<()> {
     let delimiter = '/';
 
     for name in name.iter() {
@@ -32,4 +34,5 @@ pub(crate) fn basename_command(
             break;
         };
     }
+    Ok(())
 }

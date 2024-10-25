@@ -1,4 +1,6 @@
-pub(crate) fn which_command(all_occurrences: &bool, bin: &str, silent: &bool) {
+use anyhow::Result;
+
+pub(crate) fn which_command(all_occurrences: &bool, bin: &str, silent: &bool) -> Result<()> {
     let path = std::env::var("PATH").unwrap();
 
     let delimiter = ":";
@@ -27,5 +29,6 @@ pub(crate) fn which_command(all_occurrences: &bool, bin: &str, silent: &bool) {
     }
     if !was_found {
         std::process::exit(1)
-    }
+    };
+    Ok(())
 }

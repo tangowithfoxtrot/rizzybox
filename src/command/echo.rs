@@ -1,5 +1,6 @@
 use std::io::IsTerminal;
 
+use anyhow::Result;
 use bat::PrettyPrinter;
 
 pub(crate) fn echo_command(
@@ -9,7 +10,7 @@ pub(crate) fn echo_command(
     nonewline: &bool,
     text: &str,
     theme: &str,
-) {
+) -> Result<()> {
     let mut text = text.to_string();
     if !nonewline {
         text.push('\n');
@@ -41,4 +42,5 @@ pub(crate) fn echo_command(
         .show_nonprintable(*enable_backslash_escapes && *disable_backslash_escapes)
         .print()
         .unwrap();
+    Ok(())
 }

@@ -1,3 +1,6 @@
-pub(crate) fn clear_command() {
+use anyhow::Result;
+
+pub(crate) fn clear_command() -> Result<()> {
     print!("\x1b[2J\x1b[H");
+    Ok(())
 }

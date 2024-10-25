@@ -1,3 +1,5 @@
-pub(crate) fn true_command() {
-    std::process::exit(0)
+use anyhow::Result;
+
+pub(crate) fn true_command() -> Result<()> {
+    Ok(())
 }

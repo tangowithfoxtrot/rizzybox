@@ -1,3 +1,5 @@
-pub(crate) fn false_command() {
-    std::process::exit(1)
+use anyhow::Result;
+
+pub(crate) fn false_command() -> Result<()> {
+    std::process::exit(1);
 }

@@ -1,5 +1,6 @@
 use std::env;
 
+use anyhow::{Context, Result};
 use clap::{CommandFactory, Parser, Subcommand};
 use clap_complete::Shell;
 
@@ -190,7 +191,7 @@ enum Commands {
     },
 }
 
-fn main() {
+fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
     let binary_name = args.first().map(|s| s.as_str()).unwrap_or_default();
 
@@ -217,11 +218,13 @@ fn main() {
         for bin in INSTALLABLE_BINS.iter() {
             println!(
                 "ln -sf {} $RIZZYBOX_INSTALL_DIR/{}",
-                std::env::current_exe().unwrap().display(),
+                std::env::current_exe()
+                    .context("rizzybox should exist")?
+                    .display(),
                 bin,
             )
         }
-        std::process::exit(0);
+        return Ok(());
     }
 
     if cli.list {
@@ -234,7 +237,7 @@ fn main() {
     if let Some(command) = cli.command {
         match command {
             Commands::Arch {} => {
-                arch_command();
+                arch_command()?;
             }
             Commands::Basename {
                 multiple,
@@ -242,16 +245,16 @@ fn main() {
                 suffix,
                 zero,
             } => {
-                basename_command(&multiple, &name, &suffix, &zero);
+                basename_command(&multiple, &name, &suffix, &zero)?;
             }
             Commands::Cat {
                 file,
                 language,
                 theme,
             } => {
-                cat_command(&file, &language, &theme);
+                cat_command(&file, &language, &theme)?;
             }
-            Commands::Clear {} => clear_command(),
+            Commands::Clear {} => clear_command()?,
             Commands::Completions { shell } => {
                 // FIXME: this probably won't work when commands are invoked in their symlinked form (`echo`, `env`, `cat`)
                 let Some(shell) = shell.or_else(Shell::from_env) else {
@@ -277,16 +280,15 @@ fn main() {
                     &nonewline,
                     &text,
                     &theme,
-                );
+                )?;
             }
             Commands::Env {} => {
-                env_command();
+                env_command()?;
             }
-            Commands::False {} => {
-                false_command();
-            }
+            Commands::False {} => false_command()?,
+
             Commands::True {} => {
-                true_command();
+                true_command()?;
             }
             Commands::Uname {
                 all,
@@ -305,18 +307,19 @@ fn main() {
                     &kernel_version,
                     &machine,
                     &operating_system,
-                );
+                )?;
             }
             Commands::Which {
                 all_occurrences,
                 bin,
                 silent,
             } => {
-                which_command(&all_occurrences, &bin, &silent);
+                which_command(&all_occurrences, &bin, &silent)?;
             }
             Commands::Yes { text } => {
-                yes_command(&text);
+                yes_command(&text)?;
             }
         }
-    }
+    };
+    Ok(())
 }
