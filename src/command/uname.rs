@@ -1,5 +1,5 @@
 use libc::uname;
-use std::{collections::HashSet, ffi::CStr};
+use std::{collections::HashSet, env::consts::OS, ffi::CStr};
 
 #[derive(Debug)]
 struct UtsName {
@@ -71,19 +71,33 @@ pub(crate) fn uname_command(
                     utsname.release,
                     utsname.version,
                     utsname.machine,
-                    utsname.sysname
+                    OS
                 );
                 std::process::exit(0);
             } else {
                 let mut to_print = HashSet::new();
-                if *kernel {
-                    to_print.insert(utsname.sysname.clone());
+                // FIXME: this is stinky. do something better to workaround the fact that *kernel is a default arg
+                if *kernel
+                    && !*nodename
+                    && !*kernel_release
+                    && !*kernel_version
+                    && !*machine
+                    && !*operating_system
+                {
+                    to_print.insert(utsname.sysname);
                 }
                 if *nodename {
                     to_print.insert(utsname.nodename);
                 }
                 if *kernel_release {
-                    to_print.insert(utsname.release);
+                    to_print.insert(
+                        utsname
+                            .release
+                            .split_ascii_whitespace()
+                            .last()
+                            .unwrap()
+                            .to_string(),
+                    );
                 }
                 if *kernel_version {
                     to_print.insert(utsname.version);
@@ -92,7 +106,8 @@ pub(crate) fn uname_command(
                     to_print.insert(utsname.machine);
                 }
                 if *operating_system {
-                    to_print.insert(utsname.sysname);
+                    // TODO: figure out how to get this at runtime
+                    to_print.insert(OS.to_string());
                 }
                 println!(
                     "{}",
