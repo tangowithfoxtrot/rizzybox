@@ -57,14 +57,20 @@ enum Commands {
             help = "support multiple arguments and treat each as a NAME"
         )]
         multiple: bool,
+
+        #[arg(help = "print NAME with any leading directory components removed")]
         name: Vec<String>,
+
         #[arg(long, short, help = "remove a trailing SUFFIX; implies -a")]
         suffix: Option<String>,
+
         #[arg(long, short, help = "end each output line with NUL, not newline")]
         zero: bool,
     },
     Cat {
+        #[arg(help = "file to concatenate")]
         file: Vec<String>,
+
         #[arg(
             long,
             short,
@@ -72,6 +78,7 @@ enum Commands {
             help = "language to use for syntax highlighting"
         )]
         language: String,
+
         #[arg(
             long,
             short,
@@ -82,6 +89,7 @@ enum Commands {
     },
     Clear {},
     Completions {
+        #[arg(help = "the shell to generate completions for")]
         shell: Option<Shell>,
     },
     Echo {
@@ -91,12 +99,14 @@ enum Commands {
             help = "disable interpretation of backslash escapes"
         )]
         disable_backslash_escapes: bool,
+
         #[arg(
             short = 'e',
             default_value_t = false,
             help = "enable interpretation of backslash escapes"
         )]
         enable_backslash_escapes: bool,
+
         #[arg(
             long,
             short,
@@ -104,6 +114,7 @@ enum Commands {
             help = "language to use for syntax highlighting"
         )]
         language: String,
+
         #[arg(
             long,
             short,
@@ -111,8 +122,10 @@ enum Commands {
             help = "do not output the trailing newline"
         )]
         nonewline: bool,
+
         #[arg(default_value = "")]
         string: String,
+
         #[arg(
             long,
             short,
@@ -127,6 +140,7 @@ enum Commands {
     Uname {
         #[arg(long, short, default_value_t = false, help = "print all information")]
         all: bool,
+
         #[arg(
             long,
             short = 's',
@@ -134,6 +148,7 @@ enum Commands {
             help = "print the kernel name"
         )]
         kernel: bool,
+
         #[arg(
             long,
             short = 'n',
@@ -141,6 +156,7 @@ enum Commands {
             help = "print the network node hostname"
         )]
         nodename: bool,
+
         #[arg(
             long = "kernel-release",
             short = 'r',
@@ -148,6 +164,7 @@ enum Commands {
             help = "print the kernel release"
         )]
         kernel_release: bool,
+
         #[arg(
             long = "kernel-version",
             short = 'v',
@@ -155,6 +172,7 @@ enum Commands {
             help = "print the kernel version"
         )]
         kernel_version: bool,
+
         #[arg(
             long,
             short,
@@ -162,6 +180,7 @@ enum Commands {
             help = "print the machine hardware name"
         )]
         machine: bool,
+
         #[arg(
             long,
             short,
@@ -177,7 +196,10 @@ enum Commands {
             help = "print all matching pathnames of each argument"
         )]
         all_occurrences: bool,
+
+        #[arg(help = "command to search for in PATH")]
         bin: String,
+
         #[arg(
             short,
             default_value_t = false,
