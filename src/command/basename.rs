@@ -25,7 +25,7 @@ pub(crate) fn basename_command(
         };
 
         if *zero {
-            print!("{output}");
+            print!("{output}\0");
         } else {
             println!("{output}");
         }
