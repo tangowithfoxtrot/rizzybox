@@ -1,6 +1,6 @@
 use anyhow::Result;
 
 pub(crate) fn clear_command() -> Result<()> {
-    print!("\x1b[2J\x1b[H");
+    println!("\x1b[2J\x1b[H");
     Ok(())
 }
