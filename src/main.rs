@@ -43,6 +43,9 @@ struct Cli {
     #[arg(long, help = "print install script")]
     install: bool,
 
+    #[arg(long, help = "print install script for sudo")]
+    install_with_sudo: bool,
+
     #[arg(long, help = "list included binaries")]
     list: bool,
 }
@@ -240,6 +243,21 @@ fn main() -> Result<()> {
         for bin in INSTALLABLE_BINS.iter() {
             println!(
                 "ln -sf {} $RIZZYBOX_INSTALL_DIR/{}",
+                std::env::current_exe()
+                    .context("rizzybox should exist")?
+                    .display(),
+                bin,
+            )
+        }
+        return Ok(());
+    }
+
+    if cli.install_with_sudo {
+        println!("# to install rizzybox bins, paste the following in your shell:\n");
+        println!("export RIZZYBOX_INSTALL_DIR=/usr/local/bin # change this to the desired installation path");
+        for bin in INSTALLABLE_BINS.iter() {
+            println!(
+                "sudo ln -sf {} $RIZZYBOX_INSTALL_DIR/{}",
                 std::env::current_exe()
                     .context("rizzybox should exist")?
                     .display(),
