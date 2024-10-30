@@ -9,3 +9,7 @@ bat = "0.24.0"
 clap = { version = "4.5.20", features = ["derive"] }
 clap_complete = "4.5.33"
 libc = "0.2.161"
+
+[dev-dependencies]
+assert_cmd = { version = "2.0.16" }
+predicates = "3.1.2"
