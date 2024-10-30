@@ -14,7 +14,7 @@ pub(crate) fn cat_command(files: &[String], language: &str, theme: &str) -> Resu
             .unwrap();
     };
 
-    if files.is_empty() {
+    if files.is_empty() || files.first().unwrap() == "-" {
         print_file("/dev/stdin");
     } else {
         for file in files {
