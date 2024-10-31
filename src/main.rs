@@ -1,8 +1,9 @@
 use std::env;
 
 use anyhow::{Context, Result};
-use clap::{CommandFactory, Parser, Subcommand};
+use clap::{ArgAction, CommandFactory, Parser, Subcommand};
 use clap_complete::Shell;
+use rizzybox::consts::INSTALLABLE_BINS;
 
 use crate::command::{
     basename::*, cat::*, clear::*, echo::*, env::*, r#false::*, r#true::*, uname::*, which::*,
@@ -10,12 +11,6 @@ use crate::command::{
 };
 
 mod command;
-
-/// Binaries that can be installed with --install
-/// Example: ln -sf /full/path/to/rizzybox /usr/local/bin/cat
-const INSTALLABLE_BINS: [&str; 11] = [
-    "arch", "basename", "cat", "clear", "echo", "env", "false", "true", "uname", "which", "yes",
-];
 
 #[derive(Parser)]
 #[command(
@@ -137,7 +132,29 @@ enum Commands {
         )]
         theme: String,
     },
-    Env {},
+    Env {
+        // #[arg(long, short, help = "pass ARG as the zeroth argument of COMMAND")]
+        // argv0: Option<String>,
+        #[arg(long, short, help = "change working directory to DIR")]
+        chdir: Option<String>,
+
+        #[arg(help = "command to run in the environment", trailing_var_arg = true)]
+        command: Vec<String>,
+
+        #[arg(
+            action = clap::ArgAction::SetTrue,
+            long,
+            short = 'i',
+            help = "start with an empty environment",
+        )]
+        ignore_environment: bool,
+
+        #[arg(long, short = '0', help = "end echo output line with NUL, not newline")]
+        null: bool,
+
+        #[arg(action = ArgAction::Append, long, short, help = "remove variable from the environment")]
+        unset: Vec<String>,
+    },
     False {},
     True {},
     Uname {
@@ -322,8 +339,22 @@ fn main() -> Result<()> {
                     &theme,
                 )?;
             }
-            Commands::Env {} => {
-                env_command()?;
+            Commands::Env {
+                // argv0,
+                chdir,
+                command,
+                ignore_environment,
+                null,
+                unset,
+            } => {
+                env_command(
+                    // &argv0,
+                    &chdir,
+                    &command,
+                    &ignore_environment,
+                    &null,
+                    &unset,
+                )?;
             }
             Commands::False {} => false_command()?,
 
