@@ -66,7 +66,7 @@ pub(crate) fn env_command(
         }
     }
 
-    if *ignore_environment || !unset.is_empty() {
+    if *ignore_environment {
         if cmd.is_some() {
             let status = Command::new(cmd.unwrap().0)
                 .args(args)
