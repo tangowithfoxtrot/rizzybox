@@ -1,6 +1,7 @@
 pub(crate) mod basename;
 pub(crate) mod cat;
 pub(crate) mod clear;
+pub(crate) mod dirname;
 pub(crate) mod echo;
 pub(crate) mod env;
 pub(crate) mod r#false;

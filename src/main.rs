@@ -6,8 +6,8 @@ use clap_complete::Shell;
 use rizzybox::consts::INSTALLABLE_BINS;
 
 use crate::command::{
-    basename::*, cat::*, clear::*, echo::*, env::*, r#false::*, r#true::*, uname::*, which::*,
-    yes::*,
+    basename::*, cat::*, clear::*, dirname::*, echo::*, env::*, r#false::*, r#true::*, uname::*,
+    which::*, yes::*,
 };
 
 mod command;
@@ -89,6 +89,22 @@ enum Commands {
     Completions {
         #[arg(help = "the shell to generate completions for")]
         shell: Option<Shell>,
+    },
+    #[command(
+        about = "Output each NAME with its last non-slash component and trailing slashes
+removed; if NAME contains no /'s, output '.' (meaning the current directory)."
+    )]
+    Dirname {
+        #[arg(help = "strip last component from file name", required = true)]
+        name: Vec<String>,
+
+        #[arg(
+            long,
+            short,
+            help = "end each output line with NUL, not newline",
+            visible_short_alias = '0'
+        )]
+        zero: bool,
     },
     Echo {
         #[arg(
@@ -324,6 +340,9 @@ fn main() -> Result<()> {
                 let name = cmd.get_name().to_string();
                 clap_complete::generate(shell, &mut cmd, name, &mut std::io::stdout());
             }
+            Commands::Dirname { name, zero } => {
+                dirname_command(&name, &zero)?;
+            }
             Commands::Echo {
                 disable_backslash_escapes,
                 enable_backslash_escapes,
@@ -352,7 +371,6 @@ fn main() -> Result<()> {
                 env_command(&argv0, &chdir, &command, &ignore_environment, &null, &unset)?;
             }
             Commands::False {} => false_command()?,
-
             Commands::True {} => {
                 true_command()?;
             }
