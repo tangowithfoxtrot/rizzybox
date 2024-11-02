@@ -15,7 +15,7 @@ mod command;
 #[derive(Parser)]
 #[command(
     version,
-    about,
+    about = "A multi-call binary containing common coreutils",
     long_about = r#"
 
 8888888b.  d8b                            888888b.
@@ -52,7 +52,8 @@ enum Commands {
         #[arg(
             long = "multiple",
             short = 'a',
-            help = "support multiple arguments and treat each as a NAME"
+            help = "support multiple arguments and treat each as a NAME",
+            visible_short_alias = 'm'
         )]
         multiple: bool,
 
@@ -62,7 +63,12 @@ enum Commands {
         #[arg(long, short, help = "remove a trailing SUFFIX; implies -a")]
         suffix: Option<String>,
 
-        #[arg(long, short, help = "end each output line with NUL, not newline")]
+        #[arg(
+            long,
+            short,
+            help = "end each output line with NUL, not newline",
+            visible_short_alias = '0'
+        )]
         zero: bool,
     },
     Cat {
@@ -167,7 +173,13 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
         )]
         ignore_environment: bool,
 
-        #[arg(long, short = '0', help = "end echo output line with NUL, not newline")]
+        #[arg(
+            long,
+            short = '0',
+            help = "end echo output line with NUL, not newline",
+            visible_alias = "zero",
+            visible_short_alias = '0'
+        )]
         null: bool,
 
         #[arg(action = ArgAction::Append, long, short, help = "remove variable from the environment")]
