@@ -132,9 +132,11 @@ enum Commands {
         )]
         theme: String,
     },
+    #[command(about = "run a program in a modified environment")]
     Env {
-        // #[arg(long, short, help = "pass ARG as the zeroth argument of COMMAND")]
-        // argv0: Option<String>,
+        #[arg(long, short, help = "pass ARG as the zeroth argument of COMMAND")]
+        argv0: Option<String>,
+
         #[arg(long, short, help = "change working directory to DIR")]
         chdir: Option<String>,
 
@@ -340,21 +342,14 @@ fn main() -> Result<()> {
                 )?;
             }
             Commands::Env {
-                // argv0,
+                argv0,
                 chdir,
                 command,
                 ignore_environment,
                 null,
                 unset,
             } => {
-                env_command(
-                    // &argv0,
-                    &chdir,
-                    &command,
-                    &ignore_environment,
-                    &null,
-                    &unset,
-                )?;
+                env_command(&argv0, &chdir, &command, &ignore_environment, &null, &unset)?;
             }
             Commands::False {} => false_command()?,
 
@@ -385,7 +380,10 @@ fn main() -> Result<()> {
                 command,
                 silent,
             } => {
-                which_command(&all_occurrences, &command, &silent)?;
+                let result = which_command(&all_occurrences, &command, &silent)?;
+                if result.is_none() {
+                    std::process::exit(1);
+                }
             }
             Commands::Yes { text } => {
                 yes_command(&text)?;

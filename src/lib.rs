@@ -1,10 +1,27 @@
 use std::{fs::remove_file, string::String};
+
 pub mod consts {
     /// Binaries that can be installed with --install
     /// Example: ln -sf /full/path/to/rizzybox /usr/local/bin/cat
     pub const INSTALLABLE_BINS: [&str; 11] = [
         "arch", "basename", "cat", "clear", "echo", "env", "false", "true", "uname", "which", "yes",
     ];
+}
+
+/// A simple error handler with formatting
+pub fn handle_error<T>(result: Result<T, std::io::Error>, message: &str) -> T {
+    match result {
+        Ok(value) => value,
+        Err(e) => {
+            eprintln!(
+                "{}: {}: {}",
+                std::env::current_exe().unwrap().display(),
+                message,
+                e
+            );
+            std::process::exit(1);
+        }
+    }
 }
 
 /// TestCleanup is a struct that implements the Drop trait to run cleanup code when it goes out of scope.

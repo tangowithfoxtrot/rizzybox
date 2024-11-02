@@ -1,34 +1,34 @@
 use anyhow::Result;
+use std::path::Path;
 
-pub(crate) fn which_command(all_occurrences: &bool, command: &str, silent: &bool) -> Result<()> {
+pub(crate) fn which_command(
+    all_occurrences: &bool,
+    command: &str,
+    silent: &bool,
+) -> Result<Option<String>> {
     let path = std::env::var("PATH").unwrap();
-
     let delimiter = ":";
     let paths: Vec<_> = path.split(delimiter).collect();
 
-    let mut was_found: bool = false;
+    let command_path = Path::new(command);
+    if command_path.is_absolute() || command_path.exists() {
+        let full_path = std::fs::canonicalize(command_path)?;
+        if !*silent {
+            println!("{}", full_path.display());
+        }
+        return Ok(Some(full_path.to_string_lossy().to_string()));
+    }
+
     for path in paths {
         let full_path = format!("{}/{}", path, command);
-        match std::path::Path::new(&full_path).exists() {
-            true => {
-                was_found = true;
-                if !*silent {
-                    println!("{}", &full_path);
-                }
-                if !*all_occurrences {
-                    break;
-                }
+        if Path::new(&full_path).exists() {
+            if !*silent {
+                println!("{}", &full_path);
             }
-            _ => {
-                was_found = match was_found {
-                    true => true,
-                    false => false,
-                };
+            if !*all_occurrences {
+                return Ok(Some(full_path));
             }
-        };
+        }
     }
-    if !was_found {
-        std::process::exit(1)
-    };
-    Ok(())
+    Ok(None)
 }

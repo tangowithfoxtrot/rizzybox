@@ -1,92 +1,90 @@
 use anyhow::Result;
 use bat::PrettyPrinter;
-use std::collections::HashMap;
-use std::env::remove_var;
+use std::env::{remove_var, set_current_dir, vars};
+use std::os::unix::fs::symlink;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+use crate::which_command;
+use rizzybox::handle_error;
+
 pub(crate) fn env_command(
-    // argv0: &Option<String>, // TODO: implement this
+    argv0: &Option<String>,
     chdir: &Option<String>,
     command: &[String],
     ignore_environment: &bool,
     null: &bool,
     unset: &Vec<String>,
 ) -> Result<()> {
-    let mut environment: HashMap<String, String> = HashMap::new();
-    let mut kv_pairs = String::new();
-
     if let Some(dir) = chdir {
         let path = Path::new(dir);
-
-        if !path.exists() {
-            eprintln!(
-                "{}: cannot change to directory '{}': No such file or directory",
-                std::env::current_exe()?
-                    .to_string_lossy()
-                    .rsplit_once('/')
-                    .unwrap()
-                    .1,
-                dir
-            );
-            std::process::exit(1);
-        }
-        if !path.is_dir() {
-            eprintln!(
-                "{}: cannot change to directory '{}': Not a directory",
-                std::env::current_exe()?
-                    .to_string_lossy()
-                    .rsplit_once('/')
-                    .unwrap()
-                    .1,
-                dir
-            );
-            std::process::exit(1);
-        }
-        let path_buf = PathBuf::from(dir);
-        std::env::set_current_dir(path_buf)?;
+        handle_error(Ok(path.exists()), "Directory does not exist");
+        handle_error(Ok(path.is_dir()), "Not a directory");
+        handle_error(
+            set_current_dir(PathBuf::from(dir)),
+            "Failed to change directory",
+        );
     }
 
-    let cmd = command.split_first();
-    let args = cmd.map(|(_, args)| args).unwrap_or_default();
-    let vars = std::env::vars();
+    let mut cmd = command.split_first();
     let line_ending = if *null { "" } else { "\n" };
 
-    if !unset.is_empty() {
-        for key in unset {
-            remove_var(key);
+    // this actually gets used in the if block below
+    let mut _symlink_path_str: Option<String> = None;
+
+    if let Some(arg) = argv0 {
+        let temp_dir = std::env::temp_dir();
+        let symlink_path = temp_dir.join(arg);
+        let cmd_path = cmd.as_ref().unwrap().0.clone();
+
+        let cmd_path_abs = match which_command(&false, &cmd_path, &true) {
+            Ok(Some(path)) => path,
+            Ok(None) => {
+                eprintln!("'{}': No such file or directory", cmd_path);
+                std::process::exit(1);
+            }
+            Err(e) => {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+        };
+
+        if symlink_path.exists() {
+            handle_error(
+                std::fs::remove_file(&symlink_path),
+                "Failed to remove existing symlink",
+            );
         }
 
-        if cmd.is_some() {
-            let status = Command::new(cmd.unwrap().0)
-                .args(args)
-                .status()
-                .expect("failed to execute process");
-            std::process::exit(status.code().unwrap());
-        }
+        handle_error(
+            symlink(&cmd_path_abs, &symlink_path),
+            "Failed to create symlink",
+        );
+
+        _symlink_path_str = Some(symlink_path.to_string_lossy().to_string());
+        cmd = Some((_symlink_path_str.as_ref().unwrap(), cmd.as_ref().unwrap().1));
     }
 
-    if *ignore_environment {
-        if cmd.is_some() {
-            let status = Command::new(cmd.unwrap().0)
-                .args(args)
-                .env_clear()
-                .status()
-                .expect("failed to execute process");
-            std::process::exit(status.code().unwrap());
+    for key in unset {
+        remove_var(key);
+    }
+
+    if let Some((cmd_path, args)) = cmd {
+        let mut command = Command::new(cmd_path);
+        command.args(args);
+
+        if *ignore_environment {
+            command.env_clear();
         }
-    } else if cmd.is_some() {
-        let status = Command::new(cmd.unwrap().0)
-            .args(args)
-            .status()
-            .expect("failed to execute process");
-        std::process::exit(status.code().unwrap());
+
+        let status = command.status().expect("failed to execute process");
+        std::process::exit(status.code().unwrap_or(1));
     } else {
-        for (key, value) in vars {
+        let mut kv_pairs = String::new();
+        for (key, value) in vars() {
             let kv_pair = format!("{}={}", key, value);
             kv_pairs.push_str(&kv_pair);
             kv_pairs.push_str(line_ending);
-            environment.insert(key, value);
         }
 
         PrettyPrinter::new()
@@ -95,5 +93,6 @@ pub(crate) fn env_command(
             .print()
             .unwrap();
     }
+
     Ok(())
 }
