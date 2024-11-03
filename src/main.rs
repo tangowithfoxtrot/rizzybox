@@ -3,7 +3,7 @@ use std::env;
 use anyhow::{Context, Result};
 use clap::{ArgAction, CommandFactory, Parser, Subcommand};
 use clap_complete::Shell;
-use rizzybox::consts::INSTALLABLE_BINS;
+use rizzybox::{consts::INSTALLABLE_BINS, parse_kv_pair};
 
 use crate::command::{
     basename::*, cat::*, clear::*, dirname::*, echo::*, env::*, expand::*, r#false::*, r#true::*,
@@ -162,9 +162,6 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
         #[arg(long, short, help = "change working directory to DIR")]
         chdir: Option<String>,
 
-        #[arg(help = "command to run in the environment", trailing_var_arg = true)]
-        command: Vec<String>,
-
         #[arg(
             action = clap::ArgAction::SetTrue,
             long,
@@ -184,8 +181,14 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
 
         #[arg(action = ArgAction::Append, long, short, help = "remove variable from the environment")]
         unset: Vec<String>,
+
+        #[arg(help = "KEY=VALUE to set in the environment", value_parser = parse_kv_pair)]
+        kv_pair: Vec<String>,
+
+        #[arg(help = "command to run in the environment", last = true)]
+        // FIXME: this requires the command to be passed via `--`, which differs from coreutils env
+        command: Vec<String>,
     },
-    False {},
     #[command(about = "Convert tabs in each FILE to spaces, writing to standard output.")]
     Expand {
         #[arg(default_value = "-", help = "file to concatenate")]
@@ -194,6 +197,7 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
         #[arg(long, short, value_name = "N,LIST", value_delimiter = ',', num_args = 1.., help = "have tabs N characters apart, not 8")]
         tabs: Option<Vec<String>>,
     },
+    False {},
     True {},
     Uname {
         #[arg(long, short, default_value_t = false, help = "print all information")]
@@ -387,8 +391,17 @@ fn main() -> Result<()> {
                 ignore_environment,
                 null,
                 unset,
+                kv_pair,
             } => {
-                env_command(&argv0, &chdir, &command, &ignore_environment, &null, &unset)?;
+                env_command(
+                    &argv0,
+                    &chdir,
+                    &command,
+                    &ignore_environment,
+                    &null,
+                    &unset,
+                    &kv_pair,
+                )?;
             }
             Commands::False {} => false_command()?,
             Commands::Expand { file, tabs } => {

@@ -15,6 +15,7 @@ pub(crate) fn env_command(
     ignore_environment: &bool,
     null: &bool,
     unset: &Vec<String>,
+    kv_pair: &[String],
 ) -> Result<()> {
     if let Some(dir) = chdir {
         let path = Path::new(dir);
@@ -24,6 +25,15 @@ pub(crate) fn env_command(
             set_current_dir(PathBuf::from(dir)),
             "Failed to change directory",
         );
+    }
+    if cfg!(debug_assertions) {
+        eprintln!("command: {:?}", command);
+        eprintln!("argv0: {:?}", argv0);
+        eprintln!("chdir: {:?}", chdir);
+        eprintln!("ignore_environment: {:?}", ignore_environment);
+        eprintln!("null: {:?}", null);
+        eprintln!("unset: {:?}", unset);
+        eprintln!("kv_pair: {:?}", kv_pair);
     }
 
     let mut cmd = command.split_first();
@@ -75,6 +85,13 @@ pub(crate) fn env_command(
 
         if *ignore_environment {
             command.env_clear();
+        }
+
+        for var in kv_pair.iter() {
+            let mut split = var.splitn(2, '=');
+            if let (Some(key), Some(value)) = (split.next(), split.next()) {
+                command.env(key, value);
+            }
         }
 
         let status = command.status().expect("failed to execute process");
