@@ -6,7 +6,7 @@ pub(crate) fn which_command(
     command: &str,
     silent: &bool,
 ) -> Result<Option<String>> {
-    let path = std::env::var("PATH").unwrap();
+    let path = std::env::var("PATH").unwrap_or_else(|_| "/bin:/usr/bin".to_string());
     let delimiter = ":";
     let paths: Vec<_> = path.split(delimiter).collect();
 
