@@ -6,8 +6,8 @@ use clap_complete::Shell;
 use rizzybox::consts::INSTALLABLE_BINS;
 
 use crate::command::{
-    basename::*, cat::*, clear::*, dirname::*, echo::*, env::*, r#false::*, r#true::*, uname::*,
-    which::*, yes::*,
+    basename::*, cat::*, clear::*, dirname::*, echo::*, env::*, expand::*, r#false::*, r#true::*,
+    uname::*, which::*, yes::*,
 };
 
 mod command;
@@ -186,6 +186,14 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
         unset: Vec<String>,
     },
     False {},
+    #[command(about = "Convert tabs in each FILE to spaces, writing to standard output.")]
+    Expand {
+        #[arg(default_value = "-", help = "file to concatenate")]
+        file: String,
+
+        #[arg(long, short, value_name = "N,LIST", value_delimiter = ',', num_args = 1.., help = "have tabs N characters apart, not 8")]
+        tabs: Option<Vec<String>>,
+    },
     True {},
     Uname {
         #[arg(long, short, default_value_t = false, help = "print all information")]
@@ -383,6 +391,9 @@ fn main() -> Result<()> {
                 env_command(&argv0, &chdir, &command, &ignore_environment, &null, &unset)?;
             }
             Commands::False {} => false_command()?,
+            Commands::Expand { file, tabs } => {
+                expand_command(&file, &tabs)?;
+            }
             Commands::True {} => {
                 true_command()?;
             }
