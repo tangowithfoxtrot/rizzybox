@@ -54,12 +54,6 @@ pub(crate) fn arch_command() -> Result<()> {
     Ok(())
 }
 
-// rizzybox uname:
-// user@hostname ~> uname -a
-// Linux hostname 6.1.0-26-cloud-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.112-1 (2024-09-30) x86_64 Linux
-// GNU uname:
-// user@hostname ~>  /usr/bin/uname -a
-// Linux hostname 6.1.0-26-cloud-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.112-1 (2024-09-30) x86_64 GNU/Linux
 pub(crate) fn uname_command(
     all: &bool,
     kernel: &bool,
@@ -69,6 +63,19 @@ pub(crate) fn uname_command(
     machine: &bool,
     operating_system: &bool,
 ) -> Result<()> {
+    // TODO: figure out how to get this at runtime
+    let os_string = match OS {
+        "linux" => "GNU/Linux",
+        "macos" => "Darwin",
+        "ios" => "iOS",
+        "freebsd" => "FreeBSD",
+        "dragonfly" => "Dragonfly",
+        "openbsd" => "OpenBSD",
+        "solaris" => "Solaris",
+        "android" => "Android",
+        "windows" => "💩",
+        _ => "",
+    };
     match UtsName::new() {
         Ok(utsname) => {
             if *all {
@@ -79,7 +86,7 @@ pub(crate) fn uname_command(
                     utsname.release,
                     utsname.version,
                     utsname.machine,
-                    OS
+                    os_string
                 );
                 return Ok(());
             } else {
@@ -114,8 +121,7 @@ pub(crate) fn uname_command(
                     to_print.insert(utsname.machine);
                 }
                 if *operating_system {
-                    // TODO: figure out how to get this at runtime
-                    to_print.insert(OS.to_string());
+                    to_print.insert(os_string.to_string());
                 }
                 println!(
                     "{}",
