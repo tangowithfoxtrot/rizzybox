@@ -13,3 +13,4 @@ libc = "0.2.161"
 [dev-dependencies]
 assert_cmd = { version = "2.0.16" }
 predicates = "3.1.2"
+rusty-hook = "0.11.2"
