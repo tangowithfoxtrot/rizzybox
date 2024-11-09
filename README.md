@@ -21,7 +21,3 @@ Things like the `cat` and `echo` commands are mostly just a wrapper around the `
 1. Do something fun in Rust
 2. Learn more about `coreutils`
 3. Provide fancier alternatives to GNU coreutils with things like syntax-highlighting
-
-## Non-goals
-
-1. Be a full, drop-in replacement for BusyBox. Writing a shell is a lot of work :sweat_smile:
