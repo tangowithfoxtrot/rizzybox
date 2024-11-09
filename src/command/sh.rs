@@ -6,12 +6,6 @@ use std::io::Write;
 use std::path::Path;
 use std::process::Command;
 
-#[cfg(not(target_arch = "riscv64"))] // this doesn't link properly, atm
-#[link(name = "c")]
-extern "C" {
-    fn geteuid() -> u16;
-}
-
 pub(crate) fn sh_command() -> Result<()> {
     let mut already_prompted = false;
     loop {
@@ -59,14 +53,11 @@ fn render_prompt(already_prompted: bool) {
     if already_prompted {
         print!("\n\r");
     }
-    #[cfg(not(target_arch = "riscv64"))]
-    if unsafe { geteuid() } == 0 {
+    if unsafe { libc::geteuid() } == 0 {
         print!("# ");
     } else {
         print!("λ ");
     }
-    #[cfg(target_arch = "riscv64")]
-    print!("λ ");
 
     let _ = stdout().flush();
 }
