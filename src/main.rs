@@ -7,7 +7,7 @@ use rizzybox::{consts::INSTALLABLE_BINS, parse_kv_pair};
 
 use crate::command::{
     basename::*, cat::*, clear::*, dirname::*, echo::*, env::*, expand::*, r#false::*, r#true::*,
-    uname::*, which::*, yes::*,
+    sh::*, uname::*, which::*, yes::*,
 };
 
 mod command;
@@ -198,6 +198,8 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
         tabs: Option<Vec<String>>,
     },
     False {},
+    #[command(about = "A shell.")]
+    Sh {},
     True {},
     Uname {
         #[arg(long, short, default_value_t = false, help = "print all information")]
@@ -406,6 +408,9 @@ fn main() -> Result<()> {
             Commands::False {} => false_command()?,
             Commands::Expand { file, tabs } => {
                 expand_command(&file, &tabs)?;
+            }
+            Commands::Sh {} => {
+                sh_command()?;
             }
             Commands::True {} => {
                 true_command()?;
