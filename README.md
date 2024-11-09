@@ -1,4 +1,4 @@
-```
+```powershell
 8888888b.  d8b                            888888b.
 888   Y88b Y8P                            888  "88b
 888    888                                888  .88P
@@ -14,10 +14,13 @@
 
 A simple BusyBox clone written in Rust.
 
-Things like the `cat` and `echo` commands are mostly just a wrapper around the `bat` crate for now.
-
 ## Goals
 
 1. Do something fun in Rust
 2. Learn more about `coreutils`
 3. Provide fancier alternatives to GNU coreutils with things like syntax-highlighting
+
+### Acknowledgements
+
+- [bubble-shell](https://github.com/JoshMcguigan/bubble-shell); for demonstrating basic shell logic
+- [Bat](https://github.com/sharkdp/bat); enables niceties like syntax-highlighting in `cat`, `echo`, and others
