@@ -6,8 +6,8 @@ use clap_complete::Shell;
 use rizzybox::{consts::INSTALLABLE_BINS, parse_kv_pair};
 
 use crate::command::{
-    basename::*, cat::*, clear::*, dirname::*, echo::*, env::*, expand::*, r#false::*, r#true::*,
-    sh::*, uname::*, which::*, yes::*,
+    basename::*, cat::*, clear::*, dirname::*, echo::*, env::*, expand::*, ls::*, r#false::*,
+    r#true::*, sh::*, uname::*, which::*, yes::*,
 };
 
 mod command;
@@ -198,6 +198,14 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
         tabs: Option<Vec<String>>,
     },
     False {},
+    #[command(about = "List information about the FILEs (the current directory by default).")]
+    Ls {
+        #[arg(short, long, help = "do not ignore entries starting with '.'")]
+        all: bool,
+
+        #[arg(help = "path to list", default_value = ".")]
+        path: String,
+    },
     #[command(about = "A shell.")]
     Sh {},
     True {},
@@ -408,6 +416,9 @@ fn main() -> Result<()> {
             Commands::False {} => false_command()?,
             Commands::Expand { file, tabs } => {
                 expand_command(&file, &tabs)?;
+            }
+            Commands::Ls { all, path } => {
+                ls_command(&all, &path)?;
             }
             Commands::Sh {} => {
                 sh_command()?;

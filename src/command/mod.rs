@@ -6,6 +6,7 @@ pub(crate) mod echo;
 pub(crate) mod env;
 pub(crate) mod expand;
 pub(crate) mod r#false;
+pub(crate) mod ls;
 pub(crate) mod sh;
 pub(crate) mod r#true;
 pub(crate) mod uname;
