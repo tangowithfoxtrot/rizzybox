@@ -54,6 +54,7 @@ fn render_prompt(already_prompted: bool) {
     if already_prompted {
         eprint!("\n\r");
     }
+    eprintln!();
     if unsafe { libc::geteuid() } == 0 {
         eprint!("# ");
     } else {
