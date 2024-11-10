@@ -34,7 +34,7 @@ pub(crate) fn sh_command() -> Result<()> {
             }
             "exit" => match args {
                 None => return Ok(()),
-                Some(_) => std::process::exit(args.unwrap().parse::<i32>().unwrap()),
+                Some(_) => std::process::exit(args.unwrap().parse::<i32>().unwrap_or(1)),
             },
             command => {
                 let status = Command::new(command).args(args).spawn();
@@ -50,13 +50,14 @@ pub(crate) fn sh_command() -> Result<()> {
 }
 
 fn render_prompt(already_prompted: bool) {
+    let prompt = std::env::var("PS1").unwrap_or_else(|_| "λ ".to_owned());
     if already_prompted {
         print!("\n\r");
     }
     if unsafe { libc::geteuid() } == 0 {
         print!("# ");
     } else {
-        print!("λ ");
+        print!("{}", prompt);
     }
 
     let _ = stdout().flush();
