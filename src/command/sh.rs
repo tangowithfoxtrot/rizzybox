@@ -52,12 +52,12 @@ pub(crate) fn sh_command() -> Result<()> {
 fn render_prompt(already_prompted: bool) {
     let prompt = std::env::var("PS1").unwrap_or_else(|_| "λ ".to_owned());
     if already_prompted {
-        print!("\n\r");
+        eprint!("\n\r");
     }
     if unsafe { libc::geteuid() } == 0 {
-        print!("# ");
+        eprint!("# ");
     } else {
-        print!("{}", prompt);
+        eprint!("{}", prompt);
     }
 
     let _ = stdout().flush();
