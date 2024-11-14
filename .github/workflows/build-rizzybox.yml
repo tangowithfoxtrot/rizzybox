@@ -5,6 +5,7 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
@@ -58,4 +59,5 @@ jobs:
         uses: houseabsolute/actions-rust-release@faaa2226338d8b3edbed23cf0453b5fbde42c501 # v0.0.2
         with:
           executable-name: ubi
+          changes-file: "CHANGELOG.md"
           target: ${{ matrix.platform.target }}
