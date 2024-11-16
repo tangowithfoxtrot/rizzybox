@@ -51,6 +51,6 @@ jobs:
 
       - name: Create GitHub Release
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create ${{ github.ref_name }} ./artifacts/rizzybox-*.tar.gz --title "Release ${{ github.ref_name }}" --prerelease
