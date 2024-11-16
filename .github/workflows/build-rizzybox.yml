@@ -2,14 +2,14 @@ name: Build Rizzybox
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
-  RUSTFLAGS: '-C target-feature=+crt-static'
+  RUSTFLAGS: "-C target-feature=+crt-static"
 
 jobs:
   release:
@@ -17,10 +17,11 @@ jobs:
     strategy:
       matrix:
         platform:
-          - os-name: FreeBSD-x86_64
-            runs-on: ubuntu-22.04
-            target: x86_64-unknown-freebsd
-            skip_tests: true
+          # FIXME: linker errors when building for FreeBSD
+          # - os-name: FreeBSD-x86_64
+          #   runs-on: ubuntu-22.04
+          #   target: x86_64-unknown-freebsd
+          #   skip_tests: true
 
           - os-name: Linux-x86_64
             runs-on: ubuntu-22.04
