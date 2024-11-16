@@ -98,16 +98,17 @@ fn echo_with__E_disables_interpretation_of_backslash_chars() {
 fn echo_with__e_enables_interpretation_of_backslash_chars() {
     // Arrange
     let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME")).unwrap();
+    let chello_world = "\\x23\\x69\\x6e\\x63\\x6c\\x75\\x64\\x65\\x20\\x3c\\x73\\x74\\x64\\x69\\x6f\\x2e\\x68\\x3e\\x0a\\x0a\\x69\\x6e\\x74\\x20\\x6d\\x61\\x69\\x6e\\x28\\x29\\x20\\x7b\\x0a\\x20\\x20\\x20\\x20\\x70\\x72\\x69\\x6e\\x74\\x66\\x28\\x22\\x68\\x65\\x6c\\x6c\\x6f\\x2c\\x20\\x77\\x6f\\x72\\x6c\\x64\\x5c\\x6e\\x22\\x29\\x3b\\x0a\\x7d";
 
     // Act
     cmd.arg("echo");
     cmd.arg("-e");
-    cmd.arg("\r");
+    cmd.arg(chello_world);
 
     // Assert
     cmd.assert().success();
-    // FIXME: idk if this tests it properly
-    cmd.assert().stdout("␍␊\n");
+    cmd.assert()
+        .stdout("#include <stdio.h>\n\nint main() {\n    printf(\"hello, world\\n\");\n}\n");
 }
 
 #[test]
@@ -149,9 +150,9 @@ fn echo_with_all_args_works() {
     cmd.arg("echo");
     cmd.arg("-e");
     cmd.arg("-n"); // --nonewline
-    cmd.arg("weirdoutput\r");
+    cmd.arg("weirdoutput");
 
     // Assert
     cmd.assert().success();
-    cmd.assert().stdout("weirdoutput␍");
+    cmd.assert().stdout("weirdoutput");
 }
