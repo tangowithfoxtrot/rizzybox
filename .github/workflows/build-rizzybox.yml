@@ -58,6 +58,6 @@ jobs:
       - name: Publish artifacts and release
         uses: houseabsolute/actions-rust-release@faaa2226338d8b3edbed23cf0453b5fbde42c501 # v0.0.2
         with:
-          executable-name: ubi
+          executable-name: rizzybox
           changes-file: "CHANGELOG.md"
           target: ${{ matrix.platform.target }}
