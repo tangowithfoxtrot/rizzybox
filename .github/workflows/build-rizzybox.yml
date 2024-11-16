@@ -13,35 +13,30 @@ env:
 
 jobs:
   build:
-    name: Build - ${{ matrix.platform.os-name }}
+    name: Build - ${{ matrix.platform.target }}
     strategy:
       matrix:
         platform:
           # FIXME: linker errors when building for FreeBSD
-          # - os-name: FreeBSD-x86_64
+          # - target: FreeBSD-x86_64
           #   runs-on: ubuntu-22.04
           #   target: x86_64-unknown-freebsd
           #   skip_tests: true
 
-          - os-name: x86_64-unknown-linux-musl
+          - target: x86_64-unknown-linux-musl
             runs-on: ubuntu-22.04
-            target: x86_64-unknown-linux-musl
 
-          - os-name: aarch64-unknown-linux-musl
+          - target: aarch64-unknown-linux-musl
             runs-on: ubuntu-22.04
-            target: aarch64-unknown-linux-musl
 
-          - os-name: riscv64gc-unknown-linux-gnu
+          - target: riscv64gc-unknown-linux-gnu
             runs-on: ubuntu-22.04
-            target: riscv64gc-unknown-linux-gnu
 
-          - os-name: x86_64-apple-darwin
+          - target: x86_64-apple-darwin
             runs-on: macOS-latest
-            target: x86_64-apple-darwin
 
-          - os-name: aarch64-apple-darwin
+          - target: aarch64-apple-darwin
             runs-on: macOS-latest
-            target: aarch64-apple-darwin
 
     runs-on: ${{ matrix.platform.runs-on }}
     steps:
@@ -62,3 +57,4 @@ jobs:
           executable-name: rizzybox
           changes-file: "CHANGELOG.md"
           target: ${{ matrix.platform.target }}
+          archive-name: "rizzybox-${{ matrix.platform.target}}.tar.gz"
