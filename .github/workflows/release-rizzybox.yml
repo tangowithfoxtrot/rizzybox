@@ -38,6 +38,8 @@ jobs:
 
       - name: Get latest successful build run ID
         id: get_run_id
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           run_id=$(gh run list --workflow="Build Rizzybox" --branch=main --status=success --json databaseId --jq '.[0].databaseId')
           echo "run_id=$run_id" >> $GITHUB_ENV
