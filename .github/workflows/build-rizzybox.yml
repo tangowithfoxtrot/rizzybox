@@ -1,0 +1,60 @@
+name: Build Rizzybox
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-C target-feature=+crt-static"
+
+jobs:
+  build:
+    name: Build - ${{ matrix.platform.target }}
+    strategy:
+      matrix:
+        platform:
+          # FIXME: linker errors when building for FreeBSD
+          # - target: FreeBSD-x86_64
+          #   runs-on: ubuntu-22.04
+          #   target: x86_64-unknown-freebsd
+          #   skip_tests: true
+
+          - target: x86_64-unknown-linux-musl
+            runs-on: ubuntu-22.04
+
+          - target: aarch64-unknown-linux-musl
+            runs-on: ubuntu-22.04
+
+          - target: riscv64gc-unknown-linux-gnu
+            runs-on: ubuntu-22.04
+
+          - target: x86_64-apple-darwin
+            runs-on: macOS-latest
+
+          - target: aarch64-apple-darwin
+            runs-on: macOS-latest
+
+    runs-on: ${{ matrix.platform.runs-on }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Build binary
+        uses: houseabsolute/actions-rust-cross@e021eb0bd0406694c4c3bd14cfce45df810dfaa5 # v0.0.15
+        with:
+          command: ${{ matrix.platform.command }}
+          target: ${{ matrix.platform.target }}
+          args: "--locked --release"
+          strip: true
+
+      - name: Publish artifacts and release
+        uses: houseabsolute/actions-rust-release@faaa2226338d8b3edbed23cf0453b5fbde42c501 # v0.0.2
+        with:
+          executable-name: rizzybox
+          changes-file: "CHANGELOG.md"
+          target: ${{ matrix.platform.target }}
+          archive-name: "rizzybox-${{ matrix.platform.target}}"

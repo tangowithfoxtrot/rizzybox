@@ -45,7 +45,9 @@ impl Drop for TestCleanup {
         eprintln!("CLEANUP:");
         eprintln!("Removing file: {:?}", &self.file);
         if let Some(file) = &self.file {
-            remove_file(file).expect("failed to remove file");
+            if let Err(e) = remove_file(file) {
+                eprintln!("Failed to remove file: {}", e);
+            }
         }
     }
 }
