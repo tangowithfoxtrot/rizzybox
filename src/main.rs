@@ -144,7 +144,7 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
         nonewline: bool,
 
         #[arg(default_value = "")]
-        string: String,
+        string: Vec<String>,
 
         #[arg(
             long,

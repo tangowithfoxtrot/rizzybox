@@ -38,6 +38,21 @@ fn echo_with_text_is_success() {
     cmd.assert().stdout("henlo\n");
 }
 
+#[test]
+fn echo_with_multiple_text_is_success() {
+    // Arrange
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME")).unwrap();
+
+    // Act
+    cmd.arg("echo");
+    cmd.arg("henlo");
+    cmd.arg("world");
+
+    // Assert
+    cmd.assert().success();
+    cmd.assert().stdout("henlo world\n");
+}
+
 /// tests the ability to invoke `rizzybox COMMAND` as `COMMAND` directly
 #[test]
 fn echo_argshift_does_work() {

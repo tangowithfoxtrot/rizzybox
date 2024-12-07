@@ -8,10 +8,11 @@ pub(crate) fn echo_command(
     enable_backslash_escapes: &bool,
     language: &str,
     nonewline: &bool,
-    text: &str,
+    text: &[String],
     theme: &str,
 ) -> Result<()> {
-    let mut text = text.to_string();
+    let word_args = text.join(" ");
+    let mut text = word_args.to_string();
     if !nonewline {
         text.push('\n');
     }
