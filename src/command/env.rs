@@ -1,9 +1,11 @@
 use anyhow::Result;
 use bat::PrettyPrinter;
-use std::env::{remove_var, set_current_dir, vars};
-use std::os::unix::fs::symlink;
-use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::{
+    env::{remove_var, set_current_dir, vars},
+    os::unix::fs::symlink,
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 use crate::which_command;
 use rizzybox::handle_error;
@@ -45,9 +47,9 @@ pub(crate) fn env_command(
     if let Some(arg) = argv0 {
         let temp_dir = std::env::temp_dir();
         let symlink_path = temp_dir.join(arg);
-        let cmd_path = cmd.as_ref().unwrap().0.clone();
+        let cmd_path = cmd.as_ref().unwrap().0;
 
-        let cmd_path_abs = match which_command(&false, &cmd_path, &true) {
+        let cmd_path_abs = match which_command(&false, cmd_path, &true) {
             Ok(Some(path)) => path,
             Ok(None) => {
                 eprintln!("'{}': No such file or directory", cmd_path);
