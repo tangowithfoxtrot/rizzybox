@@ -8,6 +8,7 @@ pub(crate) mod expand;
 pub(crate) mod r#false;
 pub(crate) mod ls;
 pub(crate) mod sh;
+pub(crate) mod stem;
 pub(crate) mod r#true;
 pub(crate) mod uname;
 pub(crate) mod which;

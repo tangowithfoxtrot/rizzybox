@@ -7,7 +7,7 @@ use rizzybox::{consts::INSTALLABLE_BINS, parse_kv_pair};
 
 use crate::command::{
     basename::*, cat::*, clear::*, dirname::*, echo::*, env::*, expand::*, ls::*, r#false::*,
-    r#true::*, sh::*, uname::*, which::*, yes::*,
+    r#true::*, sh::*, stem::*, uname::*, which::*, yes::*,
 };
 
 mod command;
@@ -208,6 +208,10 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
     },
     #[command(about = "A shell.")]
     Sh {},
+    #[command(about = "Reduce a word to its stem")]
+    Stem {
+        string: String,
+    },
     True {},
     Uname {
         #[arg(long, short, default_value_t = false, help = "print all information")]
@@ -422,6 +426,9 @@ fn main() -> Result<()> {
             }
             Commands::Sh {} => {
                 sh_command()?;
+            }
+            Commands::Stem { string } => {
+                stem_command(&string)?;
             }
             Commands::True {} => {
                 true_command()?;
