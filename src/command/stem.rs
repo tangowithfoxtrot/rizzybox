@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use anyhow::{bail, Result};
+use anyhow::Result;
 
 const ENG_PREFIXES: [&str; 5] = ["ex", "pre", "post", "re", "un"];
 const ENG_SUFFIXES: [&str; 5] = ["ed", "ing", "er", "est", "ly"];
@@ -126,7 +126,7 @@ impl<'a> Word<'a> {
         // Example: "biggest" would normally return "bigg" because of how "est"
         // is recognized as a suffix, so we remove the extraneous 'g' to make it
         // "big". This is likely not always correct.
-        if EngConsonant::is_consonant(stem.chars().last().unwrap())
+        if EngConsonant::is_consonant(stem.chars().last().unwrap_or('.')) // '.' is arbitrary
             && (suffix.eq("ing") || suffix.eq("est") || suffix.eq("er") || suffix.eq("ed"))
         {
             stem = stem.strip_suffix(|_: char| true).unwrap_or(stem)
@@ -177,11 +177,6 @@ fn read_wordlist() -> Result<HashSet<&'static str>> {
 }
 
 pub(crate) fn stem_command(unstemmed_words: &[String]) -> Result<()> {
-    // bail early if user invokes with `stem ''` so we can unwrap safely
-    if unstemmed_words[0].trim().is_empty() {
-        bail!("cannot find the stem of an empty word")
-    }
-
     let mut to_print = Vec::new();
     for unstemmed_word in unstemmed_words {
         let word = Word::from(unstemmed_word);
