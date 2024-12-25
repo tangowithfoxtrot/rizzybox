@@ -127,7 +127,7 @@ impl<'a> Word<'a> {
         // is recognized as a suffix, so we remove the extraneous 'g' to make it
         // "big". This is likely not always correct.
         if EngConsonant::is_consonant(stem.chars().last().unwrap())
-            && (suffix.eq("ing") || suffix.eq("est") || suffix.eq("er"))
+            && (suffix.eq("ing") || suffix.eq("est") || suffix.eq("er") || suffix.eq("ed"))
         {
             stem = stem.strip_suffix(|_: char| true).unwrap_or(stem)
         }
