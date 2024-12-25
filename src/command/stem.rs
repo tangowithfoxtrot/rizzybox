@@ -5,6 +5,23 @@ use anyhow::{bail, Result};
 const ENG_PREFIXES: [&str; 5] = ["ex", "pre", "post", "re", "un"];
 const ENG_SUFFIXES: [&str; 5] = ["ed", "ing", "er", "est", "ly"];
 
+enum EngArticle {
+    A,
+    An,
+    The,
+}
+
+impl EngArticle {
+    fn from_str(s: &str) -> Option<Self> {
+        match s.to_ascii_uppercase() {
+            val if val == *"A" => Some(EngArticle::A),
+            val if val == *"AN" => Some(EngArticle::An),
+            val if val == *"THE" => Some(EngArticle::The),
+            _ => None,
+        }
+    }
+}
+
 enum EngConsonant {
     B,
     C,
@@ -57,9 +74,7 @@ impl EngConsonant {
         }
     }
 
-    fn is_consonant(c: char) -> bool {
-        Self::from_char(c).is_some()
-    }
+    fn is_consonant(c: char) -> bool { Self::from_char(c).is_some() }
 }
 
 #[derive(Debug)]
@@ -83,6 +98,15 @@ impl<'a> Word<'a> {
 
     /// Constructs a `Word` object by analyzing the given word.
     fn from(word: &'a str) -> Word<'a> {
+        // don't stem articles
+        if EngArticle::from_str(word).is_some() {
+            return Self {
+                prefix: "",
+                stem: word,
+                suffix: "",
+            };
+        }
+
         let (prefix, without_prefix) = ENG_PREFIXES
             .iter()
             .find_map(|&prefix| word.strip_prefix(prefix).map(|stem| (prefix, stem)))
@@ -102,7 +126,9 @@ impl<'a> Word<'a> {
         // Example: "biggest" would normally return "bigg" because of how "est"
         // is recognized as a suffix, so we remove the extraneous 'g' to make it
         // "big". This is likely not always correct.
-        if EngConsonant::is_consonant(stem.chars().last().unwrap()) {
+        if EngConsonant::is_consonant(stem.chars().last().unwrap())
+            && (suffix.eq("ing") || suffix.eq("est") || suffix.eq("er"))
+        {
             stem = stem.strip_suffix(|_: char| true).unwrap_or(stem)
         }
 
@@ -131,27 +157,45 @@ impl<'a> Word<'a> {
     }
 }
 
+impl std::fmt::Display for Word<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}{}{}", self.prefix, self.stem, self.suffix)
+    }
+}
+
 fn read_wordlist() -> Result<HashSet<&'static str>> {
     // Include the wordlist in the binary.
     // FIXME: this makes the binary much larger :/
     let data = include_str!("../res/mthesaur.csv");
     let mut word_set: HashSet<&str> = HashSet::new();
 
-    for val in data.split(',') {
+    for val in data.trim().split(',') {
         word_set.insert(val);
     }
 
     Ok(word_set)
 }
 
-pub(crate) fn stem_command(unstemmed_word: &str) -> Result<()> {
+pub(crate) fn stem_command(unstemmed_words: &[String]) -> Result<()> {
     // bail early if user invokes with `stem ''` so we can unwrap safely
-    if unstemmed_word.is_empty() {
+    if unstemmed_words[0].trim().is_empty() {
         bail!("cannot find the stem of an empty word")
     }
 
-    let word = Word::from(unstemmed_word);
-    println!("{}", word.stem);
+    let mut to_print = Vec::new();
+    for unstemmed_word in unstemmed_words {
+        let word = Word::from(unstemmed_word);
+        to_print.push(word.stem);
+    }
+
+    println!(
+        "{}",
+        to_print
+            .into_iter()
+            .collect::<Vec<&str>>()
+            .join(" ")
+            .trim_end()
+    );
 
     Ok(())
 }

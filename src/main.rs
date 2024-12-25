@@ -210,7 +210,7 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
     Sh {},
     #[command(about = "Reduce a word to its stem")]
     Stem {
-        string: String,
+        string: Vec<String>,
     },
     True {},
     Uname {
