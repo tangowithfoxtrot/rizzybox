@@ -176,21 +176,32 @@ fn read_wordlist() -> Result<HashSet<&'static str>> {
     Ok(word_set)
 }
 
-pub(crate) fn stem_command(unstemmed_words: &[String]) -> Result<()> {
+pub(crate) fn stem_command(nonewline: &bool, unstemmed_words: &[String]) -> Result<()> {
     let mut to_print = Vec::new();
     for unstemmed_word in unstemmed_words {
         let word = Word::from(unstemmed_word);
         to_print.push(word.stem);
     }
 
-    println!(
-        "{}",
-        to_print
-            .into_iter()
-            .collect::<Vec<&str>>()
-            .join(" ")
-            .trim_end()
-    );
+    if *nonewline {
+        print!(
+            "{}",
+            to_print
+                .into_iter()
+                .collect::<Vec<&str>>()
+                .join(" ")
+                .trim_end()
+        );
+    } else {
+        println!(
+            "{}",
+            to_print
+                .into_iter()
+                .collect::<Vec<&str>>()
+                .join(" ")
+                .trim_end()
+        );
+    }
 
     Ok(())
 }

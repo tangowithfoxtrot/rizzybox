@@ -139,7 +139,7 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
             long,
             short,
             default_value_t = false,
-            help = "do not output the trailing newline"
+            help = "do not output a trailing newline"
         )]
         nonewline: bool,
 
@@ -210,6 +210,14 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
     Sh {},
     #[command(about = "Reduce a word to its stem")]
     Stem {
+        #[arg(
+            long,
+            short,
+            default_value_t = false,
+            help = "do not output a trailing newline"
+        )]
+        nonewline: bool,
+
         string: Vec<String>,
     },
     True {},
@@ -427,8 +435,8 @@ fn main() -> Result<()> {
             Commands::Sh {} => {
                 sh_command()?;
             }
-            Commands::Stem { string } => {
-                stem_command(&string)?;
+            Commands::Stem { nonewline, string } => {
+                stem_command(&nonewline, &string)?;
             }
             Commands::True {} => {
                 true_command()?;
