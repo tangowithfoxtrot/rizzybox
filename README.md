@@ -16,9 +16,10 @@ A simple BusyBox clone written in Rust.
 
 ## Goals
 
-1. Do something fun in Rust
-2. Learn more about `coreutils`
-3. Provide fancier alternatives to GNU coreutils with things like syntax-highlighting
+1. Do something fun in Rust.
+2. Learn more about `coreutils`.
+3. Provide fancier alternatives to GNU coreutils with things like syntax-highlighting and robust completions.
+4. Create original coreutils. See the [stem](./src/command/stem.rs) command for an example.
 
 ### Acknowledgements
 
