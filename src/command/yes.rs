@@ -1,8 +1,15 @@
+use std::{
+    fs::File,
+    io::{BufWriter, Write},
+};
+
 use anyhow::Result;
 
 pub(crate) fn yes_command(text: &str) -> Result<()> {
-    // TODO: use a buffer to make this waaaay faster
+    let buf = File::create("/dev/stdout")?;
+    let mut w = BufWriter::new(buf);
+
     loop {
-        println!("{text}");
+        writeln!(&mut w, "{}", text)?;
     }
 }
