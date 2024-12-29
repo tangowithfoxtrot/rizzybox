@@ -297,6 +297,24 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
         silent: bool,
     },
     Yes {
+        #[arg(
+            short,
+            long,
+            default_value = "0",
+            group = "yes_group",
+            help = "AMOUNT of TEXT to output"
+        )]
+        amount: usize,
+
+        #[arg(
+            short,
+            long,
+            group = "yes_group",
+            help = "output TEXT for a DURATION in seconds"
+        )]
+        // Optional<f32> to work around ArgGroup requiring one or the other Arg from the group
+        duration: Option<f32>,
+
         #[arg(default_value = "y")]
         text: String,
     },
@@ -478,8 +496,12 @@ fn main() -> Result<()> {
                     std::process::exit(1);
                 }
             }
-            Commands::Yes { text } => {
-                yes_command(&text)?;
+            Commands::Yes {
+                text,
+                amount,
+                duration,
+            } => {
+                yes_command(&text, amount, duration)?;
             }
         }
     };
