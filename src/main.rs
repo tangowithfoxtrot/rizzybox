@@ -211,7 +211,7 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
     #[command(about = "Pause for NUMBER of seconds")]
     Sleep {
         #[arg(help = "NUMBER of seconds to sleep")]
-        number: String, // SleepArgs,
+        number: String,
     },
     #[command(about = "Reduce a word to its stem")]
     Stem {
