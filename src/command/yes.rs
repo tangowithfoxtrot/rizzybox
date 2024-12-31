@@ -37,7 +37,6 @@ pub(crate) fn yes_command(text: &str, amount: usize, duration: Option<f32>) -> R
                 }
             } else {
                 let start = Instant::now();
-                eprintln!("scheduler starting at {:?}", start);
 
                 let thread_a = thread::spawn(move || {
                     while Instant::now().duration_since(start) < dur {
