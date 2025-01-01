@@ -10,7 +10,7 @@ pub(crate) fn basename_command(
 
     for name in name.iter() {
         let split_output = name.rsplit_once(delimiter);
-        let mut output = if let Some((_left_string, right_string)) = split_output {
+        let mut output = if let Some((_, right_string)) = split_output {
             right_string
         } else {
             name
@@ -19,8 +19,8 @@ pub(crate) fn basename_command(
         if let Some(suffix) = suffix {
             multiple = &true;
 
-            if output.ends_with(&suffix.clone()) {
-                output = output.trim_end_matches(&suffix.clone());
+            if output.ends_with(suffix) {
+                output = output.trim_end_matches(suffix);
             }
         };
 
