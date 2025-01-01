@@ -74,7 +74,9 @@ impl EngConsonant {
         }
     }
 
-    fn is_consonant(c: char) -> bool { Self::from_char(c).is_some() }
+    fn is_consonant(c: char) -> bool {
+        Self::from_char(c).is_some()
+    }
 }
 
 #[derive(Debug)]
@@ -176,7 +178,7 @@ fn read_wordlist() -> Result<HashSet<&'static str>> {
     Ok(word_set)
 }
 
-pub(crate) fn stem_command(nonewline: &bool, unstemmed_words: &[String]) -> Result<()> {
+pub fn stem_command(nonewline: &bool, unstemmed_words: &[String]) -> Result<()> {
     let mut to_print = Vec::new();
     for unstemmed_word in unstemmed_words {
         let word = Word::from(unstemmed_word);

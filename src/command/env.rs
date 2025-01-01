@@ -37,7 +37,7 @@ impl Display for KVPair<'_> {
     }
 }
 
-pub(crate) fn env_command(
+pub fn env_command(
     argv0: &Option<String>,
     chdir: &Option<String>,
     command: &[String],

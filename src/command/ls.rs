@@ -2,7 +2,7 @@ use std::{collections::BTreeSet, path::PathBuf};
 
 use anyhow::Result;
 
-pub(crate) fn ls_command(all: &bool, path: &str) -> Result<()> {
+pub fn ls_command(all: &bool, path: &str) -> Result<()> {
     let path_buf = PathBuf::from(path);
     if path_buf.is_file() {
         println!(

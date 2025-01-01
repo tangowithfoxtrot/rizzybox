@@ -2,7 +2,7 @@ use anyhow::Result;
 use bat::PrettyPrinter;
 use std::io::IsTerminal;
 
-pub(crate) fn cat_command(
+pub fn cat_command(
     files: &[String],
     language: &str,
     theme: &str,

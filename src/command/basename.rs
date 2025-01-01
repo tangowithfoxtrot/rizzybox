@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-pub(crate) fn basename_command(
+pub fn basename_command(
     mut multiple: &bool,
     name: &[String],
     suffix: &Option<String>,

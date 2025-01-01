@@ -3,7 +3,7 @@ use std::io::IsTerminal;
 use anyhow::Result;
 use bat::PrettyPrinter;
 
-pub(crate) fn echo_command(
+pub fn echo_command(
     disable_backslash_escapes: &bool,
     enable_backslash_escapes: &bool,
     language: &str,

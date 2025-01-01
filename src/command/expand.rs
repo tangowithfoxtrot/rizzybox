@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-pub(crate) fn expand_command(mut file: &str, tabs: &Option<Vec<String>>) -> Result<()> {
+pub fn expand_command(mut file: &str, tabs: &Option<Vec<String>>) -> Result<()> {
     if file == "-" {
         file = "/dev/stdin";
     }

@@ -6,7 +6,7 @@ use std::io::Write;
 use std::path::Path;
 use std::process::Command;
 
-pub(crate) fn sh_command() -> Result<()> {
+pub fn sh_command() -> Result<()> {
     let mut already_prompted = false;
     loop {
         render_prompt(already_prompted);

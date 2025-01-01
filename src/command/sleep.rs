@@ -2,7 +2,7 @@ use std::{thread::sleep, time::Duration};
 
 use anyhow::{bail, Result};
 
-pub(crate) fn sleep_command(sleep_args: &str) -> Result<()> {
+pub fn sleep_command(sleep_args: &str) -> Result<()> {
     match sleep_args {
         "infinity" => loop {
             sleep(Duration::from_secs(5))

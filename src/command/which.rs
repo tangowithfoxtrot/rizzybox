@@ -1,7 +1,7 @@
 use anyhow::Result;
 use std::path::Path;
 
-pub(crate) fn which_command(
+pub fn which_command(
     all_occurrences: &bool,
     command: &str,
     silent: &bool,

@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-pub(crate) fn dirname_command(name: &[String], zero: &bool) -> Result<()> {
+pub fn dirname_command(name: &[String], zero: &bool) -> Result<()> {
     let delimiter = '/';
 
     for name in name.iter() {

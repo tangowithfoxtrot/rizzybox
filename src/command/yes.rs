@@ -8,7 +8,7 @@ use std::{
 
 use anyhow::Result;
 
-pub(crate) fn yes_command(text: &str, amount: usize, duration: Option<f32>) -> Result<()> {
+pub fn yes_command(text: &str, amount: usize, duration: Option<f32>) -> Result<()> {
     let arc = Arc::new(text.to_string());
     let to_print = Arc::clone(&arc);
     let w = BufWriter::new(stdout());

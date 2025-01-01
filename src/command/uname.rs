@@ -49,11 +49,11 @@ impl UtsName {
     }
 }
 
-pub(crate) fn arch_command() -> Result<()> {
+pub fn arch_command() -> Result<()> {
     uname_command(&false, &false, &false, &false, &false, &true, &false)
 }
 
-pub(crate) fn uname_command(
+pub fn uname_command(
     all: &bool,
     kernel: &bool,
     nodename: &bool,
