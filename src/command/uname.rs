@@ -50,8 +50,7 @@ impl UtsName {
 }
 
 pub(crate) fn arch_command() -> Result<()> {
-    let _ = uname_command(&false, &false, &false, &false, &false, &true, &false);
-    Ok(())
+    uname_command(&false, &false, &false, &false, &false, &true, &false)
 }
 
 pub(crate) fn uname_command(
@@ -110,7 +109,7 @@ pub(crate) fn uname_command(
                             .release
                             .split_ascii_whitespace()
                             .last()
-                            .unwrap()
+                            .expect("kernel release should exist")
                             .to_string(),
                     );
                 }

@@ -16,7 +16,9 @@ pub fn handle_error<T>(result: Result<T, std::io::Error>, message: &str) -> T {
         Err(e) => {
             eprintln!(
                 "{}: {}: {}",
-                std::env::current_exe().unwrap().display(),
+                std::env::current_exe()
+                    .unwrap_or(env!("CARGO_PKG_NAME").into())
+                    .display(),
                 message,
                 e
             );

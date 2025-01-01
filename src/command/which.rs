@@ -6,10 +6,6 @@ pub(crate) fn which_command(
     command: &str,
     silent: &bool,
 ) -> Result<Option<String>> {
-    let path = std::env::var("PATH").unwrap_or_else(|_| "/bin:/usr/bin".to_string());
-    let delimiter = ":";
-    let paths: Vec<_> = path.split(delimiter).collect();
-
     let command_path = Path::new(command);
     if command_path.is_absolute() || command_path.exists() {
         let full_path = std::fs::canonicalize(command_path)?;
@@ -18,6 +14,10 @@ pub(crate) fn which_command(
         }
         return Ok(Some(full_path.to_string_lossy().to_string()));
     }
+
+    let path = std::env::var("PATH").unwrap_or("/bin:/usr/bin".to_string());
+    let delimiter = ":";
+    let paths: Vec<_> = path.split(delimiter).collect();
 
     for path in paths {
         let full_path = format!("{}/{}", path, command);

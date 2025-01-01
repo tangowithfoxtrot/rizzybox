@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
 use bat::PrettyPrinter;
 use std::{
     env::{remove_var, set_current_dir, vars},
@@ -38,16 +38,18 @@ pub(crate) fn env_command(
         eprintln!("kv_pair: {:?}", kv_pair);
     }
 
-    let mut cmd = command.split_first();
+    let mut cmd = command
+        .split_first()
+        .expect("some command should be provided");
     let line_ending = if *null { "" } else { "\n" };
 
-    // this actually gets used in the if block below
-    let mut _symlink_path_str: Option<String> = None;
+    #[allow(unused_assignments)] // this actually gets used in the if-let below
+    let mut symlink_path_str: String = String::new();
 
     if let Some(arg) = argv0 {
         let temp_dir = std::env::temp_dir();
         let symlink_path = temp_dir.join(arg);
-        let cmd_path = cmd.as_ref().unwrap().0;
+        let cmd_path = cmd.0;
 
         let cmd_path_abs = match which_command(&false, cmd_path, &true) {
             Ok(Some(path)) => path,
@@ -73,17 +75,17 @@ pub(crate) fn env_command(
             "Failed to create symlink",
         );
 
-        _symlink_path_str = Some(symlink_path.to_string_lossy().to_string());
-        cmd = Some((_symlink_path_str.as_ref().unwrap(), cmd.as_ref().unwrap().1));
+        symlink_path_str = symlink_path.to_string_lossy().to_string();
+        cmd = (&symlink_path_str, cmd.1);
     }
 
     for key in unset {
         remove_var(key);
     }
 
-    if let Some((cmd_path, args)) = cmd {
-        let mut command = Command::new(cmd_path);
-        command.args(args);
+    if !cmd.0.is_empty() {
+        let mut command = Command::new(cmd.0);
+        command.args(cmd.1);
 
         if *ignore_environment {
             command.env_clear();
@@ -96,7 +98,10 @@ pub(crate) fn env_command(
             }
         }
 
-        let status = command.status().expect("failed to execute process");
+        let status = match command.status() {
+            Ok(s) => s,
+            Err(_) => bail!("failed to execute command"),
+        };
         std::process::exit(status.code().unwrap_or(1));
     } else {
         let mut kv_pairs = String::new();
@@ -109,8 +114,7 @@ pub(crate) fn env_command(
         PrettyPrinter::new()
             .input_from_bytes(kv_pairs.as_bytes())
             .language("env")
-            .print()
-            .unwrap();
+            .print()?;
     }
 
     Ok(())

@@ -7,7 +7,11 @@ pub(crate) fn ls_command(all: &bool, path: &str) -> Result<()> {
     if path_buf.is_file() {
         println!(
             "{}",
-            path_buf.clone().into_os_string().into_string().unwrap()
+            path_buf
+                .clone()
+                .into_os_string()
+                .into_string()
+                .expect("pathbuf is file")
         );
         std::process::exit(0);
     }

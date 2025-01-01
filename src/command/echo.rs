@@ -67,7 +67,6 @@ pub(crate) fn echo_command(
         .language(language)
         .theme(theme)
         .colored_output(std::io::stdout().is_terminal())
-        .print()
-        .unwrap();
+        .print()?;
     Ok(())
 }
