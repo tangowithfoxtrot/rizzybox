@@ -350,29 +350,20 @@ fn main() -> Result<()> {
     };
 
     let cli = Cli::parse_from(args);
-    // TODO: write actual install logic instead of providing a script
-    if cli.install {
+
+    let mut sudo_str = "";
+    if cli.install_with_sudo {
+        sudo_str = "sudo ";
+    }
+
+    if cli.install | cli.install_with_sudo {
         println!("# to install rizzybox bins, paste the following in your shell:\n");
         // `export` works with more shells, like fish
         println!("export RIZZYBOX_INSTALL_DIR=/usr/local/bin # change this to the desired installation path");
         for bin in INSTALLABLE_BINS.iter() {
             println!(
-                "ln -sf {} $RIZZYBOX_INSTALL_DIR/{}",
-                std::env::current_exe()
-                    .context("rizzybox should exist")?
-                    .display(),
-                bin,
-            )
-        }
-        return Ok(());
-    }
-
-    if cli.install_with_sudo {
-        println!("# to install rizzybox bins, paste the following in your shell:\n");
-        println!("export RIZZYBOX_INSTALL_DIR=/usr/local/bin # change this to the desired installation path");
-        for bin in INSTALLABLE_BINS.iter() {
-            println!(
-                "sudo ln -sf {} $RIZZYBOX_INSTALL_DIR/{}",
+                "{}ln -sf {} $RIZZYBOX_INSTALL_DIR/{}",
+                sudo_str,
                 std::env::current_exe()
                     .context("rizzybox should exist")?
                     .display(),
@@ -383,10 +374,12 @@ fn main() -> Result<()> {
     }
 
     if cli.list {
+        let mut print_str = String::new();
         for bin in INSTALLABLE_BINS.iter() {
-            print!("{bin} ");
+            print_str.push_str(bin);
+            print_str.push(' ');
         }
-        println!();
+        println!("{}", print_str.trim_end());
     }
 
     if let Some(command) = cli.command {
