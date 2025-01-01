@@ -90,6 +90,17 @@ enum Commands {
             help = "theme to use for colored output"
         )]
         theme: String,
+
+        #[arg(
+            long,
+            short = 'A',
+            default_value = "false",
+            help = "show non-printable characters"
+        )]
+        show_all: bool,
+
+        #[arg(long, help = "list available themes")]
+        list_themes: bool,
     },
     Clear {},
     Completions {
@@ -395,8 +406,10 @@ fn main() -> Result<()> {
                 file,
                 language,
                 theme,
+                show_all,
+                list_themes,
             } => {
-                cat_command(&file, &language, &theme)?;
+                cat_command(&file, &language, &theme, &show_all, &list_themes)?;
             }
             Commands::Clear {} => clear_command()?,
             Commands::Completions { shell } => {
