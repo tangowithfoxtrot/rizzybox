@@ -183,18 +183,18 @@ pub(crate) fn stem_command(nonewline: &bool, unstemmed_words: &[String]) -> Resu
         to_print.push(word.stem);
     }
 
-    if !nonewline {
-        to_print.push("\n");
-    }
-
     print!(
         "{}",
         to_print
             .into_iter()
             .collect::<Vec<&str>>()
             .join(" ")
-            .trim_matches(' ')
+            .trim_ascii_end()
     );
+
+    if !nonewline {
+        println!();
+    }
 
     Ok(())
 }
