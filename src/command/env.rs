@@ -2,6 +2,7 @@ use anyhow::{bail, Result};
 use bat::PrettyPrinter;
 use std::{
     env::{remove_var, set_current_dir, vars},
+    fmt::Display,
     os::unix::fs::symlink,
     path::{Path, PathBuf},
     process::Command,
@@ -9,6 +10,32 @@ use std::{
 
 use crate::which_command;
 use rizzybox::handle_error;
+
+#[derive(Debug)]
+struct KVPair<'a> {
+    key: &'a str,
+    value: &'a str,
+}
+
+impl<'a> KVPair<'a> {
+    #[allow(dead_code)]
+    fn new() -> Self { Self { key: "", value: "" } }
+    fn from(key: &'a str, value: &'a str) -> Self { Self { key, value } }
+    fn parse(line: &'a str) -> Result<Self> {
+        if let Some((k, v)) = line.split_once('=') {
+            Ok(Self { key: k, value: v })
+        } else {
+            Ok(Self { key: "", value: "" })
+        }
+    }
+    fn as_string(&self) -> String { format!("{}={}", self.key, self.value) }
+}
+
+impl Display for KVPair<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}={}", self.key, self.value)
+    }
+}
 
 pub(crate) fn env_command(
     argv0: &Option<String>,
@@ -19,6 +46,8 @@ pub(crate) fn env_command(
     unset: &Vec<String>,
     kv_pair: &[String],
 ) -> Result<()> {
+    let line_ending = if *null { "" } else { "\n" };
+
     if let Some(dir) = chdir {
         let path = Path::new(dir);
         handle_error(Ok(path.exists()), "Directory does not exist");
@@ -28,62 +57,58 @@ pub(crate) fn env_command(
             "Failed to change directory",
         );
     }
+
     if cfg!(debug_assertions) {
-        eprintln!("command: {:?}", command);
-        eprintln!("argv0: {:?}", argv0);
-        eprintln!("chdir: {:?}", chdir);
+        eprintln!("command:            {:?}", command);
+        eprintln!("argv0:              {:?}", argv0);
+        eprintln!("chdir:              {:?}", chdir);
         eprintln!("ignore_environment: {:?}", ignore_environment);
-        eprintln!("null: {:?}", null);
-        eprintln!("unset: {:?}", unset);
-        eprintln!("kv_pair: {:?}", kv_pair);
+        eprintln!("null:               {:?}", null);
+        eprintln!("unset:              {:?}", unset);
+        eprintln!("kv_pair:            {:?}", kv_pair);
     }
 
-    let mut cmd = command
-        .split_first()
-        .expect("some command should be provided");
-    let line_ending = if *null { "" } else { "\n" };
+    if let Some(mut cmd) = command.split_first() {
+        #[allow(unused_assignments)] // this actually gets used in the if-let below
+        let mut symlink_path_str: String = String::new();
 
-    #[allow(unused_assignments)] // this actually gets used in the if-let below
-    let mut symlink_path_str: String = String::new();
+        if let Some(arg) = argv0 {
+            let temp_dir = std::env::temp_dir();
+            let symlink_path = temp_dir.join(arg);
+            let cmd_path = cmd.0;
 
-    if let Some(arg) = argv0 {
-        let temp_dir = std::env::temp_dir();
-        let symlink_path = temp_dir.join(arg);
-        let cmd_path = cmd.0;
+            let cmd_path_abs = match which_command(&false, cmd_path, &true) {
+                Ok(Some(path)) => path,
+                Ok(None) => {
+                    eprintln!("'{}': No such file or directory", cmd_path);
+                    std::process::exit(1);
+                }
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                    std::process::exit(1);
+                }
+            };
 
-        let cmd_path_abs = match which_command(&false, cmd_path, &true) {
-            Ok(Some(path)) => path,
-            Ok(None) => {
-                eprintln!("'{}': No such file or directory", cmd_path);
-                std::process::exit(1);
+            if symlink_path.exists() {
+                handle_error(
+                    std::fs::remove_file(&symlink_path),
+                    "Failed to remove existing symlink",
+                );
             }
-            Err(e) => {
-                eprintln!("Error: {}", e);
-                std::process::exit(1);
-            }
-        };
 
-        if symlink_path.exists() {
             handle_error(
-                std::fs::remove_file(&symlink_path),
-                "Failed to remove existing symlink",
+                symlink(&cmd_path_abs, &symlink_path),
+                "Failed to create symlink",
             );
+
+            symlink_path_str = symlink_path.to_string_lossy().to_string();
+            cmd = (&symlink_path_str, cmd.1);
         }
 
-        handle_error(
-            symlink(&cmd_path_abs, &symlink_path),
-            "Failed to create symlink",
-        );
+        for key in unset {
+            remove_var(key);
+        }
 
-        symlink_path_str = symlink_path.to_string_lossy().to_string();
-        cmd = (&symlink_path_str, cmd.1);
-    }
-
-    for key in unset {
-        remove_var(key);
-    }
-
-    if !cmd.0.is_empty() {
         let mut command = Command::new(cmd.0);
         command.args(cmd.1);
 
@@ -91,11 +116,9 @@ pub(crate) fn env_command(
             command.env_clear();
         }
 
-        for var in kv_pair.iter() {
-            let mut split = var.splitn(2, '=');
-            if let (Some(key), Some(value)) = (split.next(), split.next()) {
-                command.env(key, value);
-            }
+        for line in kv_pair.iter() {
+            let kv_pair = KVPair::parse(line)?;
+            command.env(kv_pair.key, kv_pair.value);
         }
 
         let status = match command.status() {
@@ -103,19 +126,19 @@ pub(crate) fn env_command(
             Err(_) => bail!("failed to execute command"),
         };
         std::process::exit(status.code().unwrap_or(1));
-    } else {
-        let mut kv_pairs = String::new();
-        for (key, value) in vars() {
-            let kv_pair = format!("{}={}", key, value);
-            kv_pairs.push_str(&kv_pair);
-            kv_pairs.push_str(line_ending);
-        }
+    };
 
-        PrettyPrinter::new()
-            .input_from_bytes(kv_pairs.as_bytes())
-            .language("env")
-            .print()?;
+    let mut kv_pairs = String::new();
+    for (key, value) in vars() {
+        let kv_pair = KVPair::from(&key, &value);
+        kv_pairs.push_str(&kv_pair.as_string());
+        kv_pairs.push_str(line_ending);
     }
+
+    PrettyPrinter::new()
+        .input_from_bytes(kv_pairs.as_bytes())
+        .language("env")
+        .print()?;
 
     Ok(())
 }
