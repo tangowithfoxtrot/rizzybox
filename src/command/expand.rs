@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-pub fn expand_command(mut file: &str, tabs: &Option<Vec<String>>) -> Result<()> {
+pub fn expand_command(mut file: &str, tabs: &Vec<String>) -> Result<()> {
     if file == "-" {
         file = "/dev/stdin";
     }
@@ -8,7 +8,7 @@ pub fn expand_command(mut file: &str, tabs: &Option<Vec<String>>) -> Result<()> 
     let content = std::fs::read_to_string(file);
 
     let mut total_spaces = String::new();
-    for tab in tabs.clone().unwrap_or_default().iter() {
+    for tab in tabs {
         let repeated = tab.parse::<usize>();
         if let Ok(repeated) = repeated {
             total_spaces.push_str(&" ".repeat(repeated));

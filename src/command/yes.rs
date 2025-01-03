@@ -20,7 +20,7 @@ pub fn yes_command(text: &str, amount: usize, duration: Option<f32>) -> Result<(
             if amount > 0 {
                 let mut i = 0;
                 while i < amount {
-                    writeln!(&mut w, "{}", to_print).unwrap_or_default();
+                    writeln!(&mut w, "{to_print}").unwrap_or_default();
                     i += 1;
                 }
                 return;
@@ -40,7 +40,7 @@ pub fn yes_command(text: &str, amount: usize, duration: Option<f32>) -> Result<(
 
                 let thread_a = thread::spawn(move || {
                     while Instant::now().duration_since(start) < dur {
-                        writeln!(&mut w, "{}", to_print).unwrap_or_default();
+                        writeln!(&mut w, "{to_print}").unwrap_or_default();
                     }
                 });
 

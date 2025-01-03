@@ -31,11 +31,11 @@ pub fn parse_kv_pair(s: &str) -> Result<String, String> {
     if s.contains('=') {
         Ok(s.to_string())
     } else {
-        Err(format!("Invalid key-value pair: {}", s))
+        Err(format!("Invalid key-value pair: {s}"))
     }
 }
 
-/// TestCleanup is a struct that implements the Drop trait to run cleanup code when it goes out of scope.
+/// `TestCleanup` is a struct that implements the Drop trait to run cleanup code when it goes out of scope.
 /// This is useful for removing temporary files or directories created during tests.
 /// ONLY USE THIS FOR TESTS!
 pub struct TestCleanup {
@@ -48,7 +48,7 @@ impl Drop for TestCleanup {
         eprintln!("Removing file: {:?}", &self.file);
         if let Some(file) = &self.file {
             if let Err(e) = remove_file(file) {
-                eprintln!("Failed to remove file: {}", e);
+                eprintln!("Failed to remove file: {e}");
             }
         }
     }

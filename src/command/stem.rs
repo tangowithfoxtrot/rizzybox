@@ -74,9 +74,7 @@ impl EngConsonant {
         }
     }
 
-    fn is_consonant(c: char) -> bool {
-        Self::from_char(c).is_some()
-    }
+    fn is_consonant(c: char) -> bool { Self::from_char(c).is_some() }
 }
 
 #[derive(Debug)]
@@ -131,7 +129,7 @@ impl<'a> Word<'a> {
         if EngConsonant::is_consonant(stem.chars().last().unwrap_or('.')) // '.' is arbitrary
             && (suffix.eq("ing") || suffix.eq("est") || suffix.eq("er") || suffix.eq("ed"))
         {
-            stem = stem.strip_suffix(|_: char| true).unwrap_or(stem)
+            stem = stem.strip_suffix(|_: char| true).unwrap_or(stem);
         }
 
         // Account for words like "configured", which would normally be reduced
@@ -178,7 +176,7 @@ fn read_wordlist() -> Result<HashSet<&'static str>> {
     Ok(word_set)
 }
 
-pub fn stem_command(nonewline: &bool, unstemmed_words: &[String]) -> Result<()> {
+pub fn stem_command(nonewline: bool, unstemmed_words: &[String]) -> Result<()> {
     let mut to_print = Vec::new();
     for unstemmed_word in unstemmed_words {
         let word = Word::from(unstemmed_word);

@@ -29,7 +29,7 @@ pub fn sh_command() -> Result<()> {
                 let new_dir = args.map_or(".", |x| *x);
                 let root = Path::new(new_dir);
                 if let Err(e) = env::set_current_dir(root) {
-                    eprintln!("{}", e);
+                    eprintln!("{e}");
                 }
             }
             "exit" => match args {
@@ -42,7 +42,7 @@ pub fn sh_command() -> Result<()> {
                 if let Ok(mut status) = status {
                     let _ = status.wait();
                 } else {
-                    eprintln!("sh: {}: failed to execute command", command)
+                    eprintln!("sh: {command}: failed to execute command")
                 }
             }
         }
@@ -58,7 +58,7 @@ fn render_prompt(already_prompted: bool) {
     if unsafe { libc::geteuid() } == 0 {
         eprint!("# ");
     } else {
-        eprint!("{}", prompt);
+        eprint!("{prompt}");
     }
 
     let _ = stdout().flush();

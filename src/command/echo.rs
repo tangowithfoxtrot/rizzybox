@@ -4,10 +4,10 @@ use anyhow::Result;
 use bat::PrettyPrinter;
 
 pub fn echo_command(
-    disable_backslash_escapes: &bool,
-    enable_backslash_escapes: &bool,
+    disable_backslash_escapes: bool,
+    enable_backslash_escapes: bool,
     language: &str,
-    nonewline: &bool,
+    nonewline: bool,
     text: &[String],
     theme: &str,
 ) -> Result<()> {
@@ -17,7 +17,7 @@ pub fn echo_command(
         text.push('\n');
     }
 
-    if *disable_backslash_escapes || !*enable_backslash_escapes {
+    if disable_backslash_escapes || !enable_backslash_escapes {
         text = text.replace("\\\\", "\\");
         text = text.replace("\\a", "\x07");
         text = text.replace("\\b", "\x08");

@@ -206,7 +206,7 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
         file: String,
 
         #[arg(long, short, value_name = "N,LIST", value_delimiter = ',', num_args = 1.., help = "have tabs N characters apart, not 8")]
-        tabs: Option<Vec<String>>,
+        tabs: Vec<String>,
     },
     False {},
     #[command(about = "List information about the FILEs (the current directory by default).")]
@@ -333,7 +333,7 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
 
 fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
-    let binary_name = args.first().map(|s| s.as_str()).unwrap_or_default();
+    let binary_name = args.first().map(String::as_str).unwrap_or_default();
 
     // determine if invoked as subcommand directly: `/bin/echo`
     let args = if INSTALLABLE_BINS
@@ -360,7 +360,7 @@ fn main() -> Result<()> {
         println!("# to install rizzybox bins, paste the following in your shell:\n");
         // `export` works with more shells, like fish
         println!("export RIZZYBOX_INSTALL_DIR=/usr/local/bin # change this to the desired installation path");
-        for bin in INSTALLABLE_BINS.iter() {
+        for bin in INSTALLABLE_BINS {
             println!(
                 "{}ln -sf {} $RIZZYBOX_INSTALL_DIR/{}",
                 sudo_str,
@@ -368,14 +368,14 @@ fn main() -> Result<()> {
                     .context("rizzybox should exist")?
                     .display(),
                 bin,
-            )
+            );
         }
         return Ok(());
     }
 
     if cli.list {
         let mut print_str = String::new();
-        for bin in INSTALLABLE_BINS.iter() {
+        for bin in INSTALLABLE_BINS {
             print_str.push_str(bin);
             print_str.push(' ');
         }
@@ -393,7 +393,7 @@ fn main() -> Result<()> {
                 suffix,
                 zero,
             } => {
-                basename_command(&multiple, &name, &suffix, &zero)?;
+                basename_command(multiple, &name, suffix.as_ref(), zero)?;
             }
             Commands::Cat {
                 file,
@@ -402,7 +402,7 @@ fn main() -> Result<()> {
                 show_all,
                 list_themes,
             } => {
-                cat_command(&file, &language, &theme, &show_all, &list_themes)?;
+                cat_command(&file, &language, &theme, show_all, list_themes)?;
             }
             Commands::Clear {} => clear_command()?,
             Commands::Completions { shell } => {
@@ -416,7 +416,7 @@ fn main() -> Result<()> {
                 clap_complete::generate(shell, &mut cmd, name, &mut std::io::stdout());
             }
             Commands::Dirname { name, zero } => {
-                dirname_command(&name, &zero)?;
+                dirname_command(&name, zero)?;
             }
             Commands::Echo {
                 disable_backslash_escapes,
@@ -427,10 +427,10 @@ fn main() -> Result<()> {
                 theme,
             } => {
                 echo_command(
-                    &disable_backslash_escapes,
-                    &enable_backslash_escapes,
+                    disable_backslash_escapes,
+                    enable_backslash_escapes,
                     &language,
-                    &nonewline,
+                    nonewline,
                     &text,
                     &theme,
                 )?;
@@ -445,11 +445,11 @@ fn main() -> Result<()> {
                 kv_pair,
             } => {
                 env_command(
-                    &argv0,
-                    &chdir,
+                    argv0.as_ref(),
+                    chdir.as_ref(),
                     &command,
-                    &ignore_environment,
-                    &null,
+                    ignore_environment,
+                    null,
                     &unset,
                     &kv_pair,
                 )?;
@@ -459,7 +459,7 @@ fn main() -> Result<()> {
                 expand_command(&file, &tabs)?;
             }
             Commands::Ls { all, path } => {
-                ls_command(&all, &path)?;
+                ls_command(all, &path)?;
             }
             Commands::Sh {} => {
                 sh_command()?;
@@ -468,7 +468,7 @@ fn main() -> Result<()> {
                 sleep_command(&number)?;
             }
             Commands::Stem { nonewline, string } => {
-                stem_command(&nonewline, &string)?;
+                stem_command(nonewline, &string)?;
             }
             Commands::True {} => {
                 true_command()?;
@@ -483,13 +483,13 @@ fn main() -> Result<()> {
                 operating_system,
             } => {
                 uname_command(
-                    &all,
-                    &kernel,
-                    &nodename,
-                    &kernel_release,
-                    &kernel_version,
-                    &machine,
-                    &operating_system,
+                    all,
+                    kernel,
+                    nodename,
+                    kernel_release,
+                    kernel_version,
+                    machine,
+                    operating_system,
                 )?;
             }
             Commands::Which {
@@ -497,7 +497,7 @@ fn main() -> Result<()> {
                 command,
                 silent,
             } => {
-                let result = which_command(&all_occurrences, &command, &silent)?;
+                let result = which_command(all_occurrences, &command, silent)?;
                 if result.is_none() {
                     std::process::exit(1);
                 }

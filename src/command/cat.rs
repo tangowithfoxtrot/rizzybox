@@ -6,11 +6,11 @@ pub fn cat_command(
     files: &[String],
     language: &str,
     theme: &str,
-    show_all: &bool,
-    list_themes: &bool,
+    show_all: bool,
+    list_themes: bool,
 ) -> Result<()> {
     let mut pretty_printer = PrettyPrinter::new();
-    if *list_themes {
+    if list_themes {
         let themes = pretty_printer.themes();
         for theme in themes {
             println!("{theme}");
@@ -24,7 +24,7 @@ pub fn cat_command(
             .language(language)
             .theme(theme)
             .colored_output(std::io::stdout().is_terminal())
-            .show_nonprintable(*show_all)
+            .show_nonprintable(show_all)
             .print()
             .is_ok()
         {}

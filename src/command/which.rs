@@ -1,15 +1,11 @@
 use anyhow::Result;
 use std::path::Path;
 
-pub fn which_command(
-    all_occurrences: &bool,
-    command: &str,
-    silent: &bool,
-) -> Result<Option<String>> {
+pub fn which_command(all_occurrences: bool, command: &str, silent: bool) -> Result<Option<String>> {
     let command_path = Path::new(command);
     if command_path.is_absolute() || command_path.exists() {
         let full_path = std::fs::canonicalize(command_path)?;
-        if !*silent {
+        if !silent {
             println!("{}", full_path.display());
         }
         return Ok(Some(full_path.to_string_lossy().to_string()));
@@ -20,12 +16,12 @@ pub fn which_command(
     let paths: Vec<_> = path.split(delimiter).collect();
 
     for path in paths {
-        let full_path = format!("{}/{}", path, command);
+        let full_path = format!("{path}/{command}");
         if Path::new(&full_path).exists() {
-            if !*silent {
+            if !silent {
                 println!("{}", &full_path);
             }
-            if !*all_occurrences {
+            if !all_occurrences {
                 return Ok(Some(full_path));
             }
         }

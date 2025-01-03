@@ -2,7 +2,7 @@ use std::{collections::BTreeSet, path::PathBuf};
 
 use anyhow::Result;
 
-pub fn ls_command(all: &bool, path: &str) -> Result<()> {
+pub fn ls_command(all: bool, path: &str) -> Result<()> {
     let path_buf = PathBuf::from(path);
     if path_buf.is_file() {
         println!(
@@ -21,11 +21,11 @@ pub fn ls_command(all: &bool, path: &str) -> Result<()> {
         .collect::<Result<Vec<_>, std::io::Error>>()?;
 
     let mut file_listings = BTreeSet::new();
-    if *all {
+    if all {
         file_listings.insert(".".to_owned());
         file_listings.insert("..".to_owned());
     }
-    for entry in entries.iter() {
+    for entry in &entries {
         if let Some(file_name) = entry
             .clone()
             .into_os_string()
@@ -36,7 +36,7 @@ pub fn ls_command(all: &bool, path: &str) -> Result<()> {
                     .map(|(_, file_name)| file_name.to_string())
             })
         {
-            if *all {
+            if all {
                 file_listings.insert(file_name);
             } else if file_name.starts_with('.') {
                 continue;
@@ -47,7 +47,7 @@ pub fn ls_command(all: &bool, path: &str) -> Result<()> {
     }
 
     for entry in &file_listings {
-        println!("{}", entry);
+        println!("{entry}");
     }
     Ok(())
 }

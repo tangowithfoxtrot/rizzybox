@@ -25,7 +25,7 @@ impl<'a> KVPair<'a> {
         if let Some((k, v)) = line.split_once('=') {
             Ok(Self { key: k, value: v })
         } else {
-            Ok(Self { key: "", value: "" })
+            bail!("failed to parse key-value pair in line: {line}")
         }
     }
     fn as_string(&self) -> String { format!("{}={}", self.key, self.value) }
@@ -38,15 +38,15 @@ impl Display for KVPair<'_> {
 }
 
 pub fn env_command(
-    argv0: &Option<String>,
-    chdir: &Option<String>,
+    argv0: Option<&String>,
+    chdir: Option<&String>,
     command: &[String],
-    ignore_environment: &bool,
-    null: &bool,
+    ignore_environment: bool,
+    null: bool,
     unset: &Vec<String>,
     kv_pair: &[String],
 ) -> Result<()> {
-    let line_ending = if *null { "" } else { "\n" };
+    let line_ending = if null { "" } else { "\n" };
 
     if let Some(dir) = chdir {
         let path = Path::new(dir);
@@ -59,13 +59,13 @@ pub fn env_command(
     }
 
     if cfg!(debug_assertions) {
-        eprintln!("command:            {:?}", command);
-        eprintln!("argv0:              {:?}", argv0);
-        eprintln!("chdir:              {:?}", chdir);
-        eprintln!("ignore_environment: {:?}", ignore_environment);
-        eprintln!("null:               {:?}", null);
-        eprintln!("unset:              {:?}", unset);
-        eprintln!("kv_pair:            {:?}", kv_pair);
+        eprintln!("command:            {command:?}");
+        eprintln!("argv0:              {argv0:?}");
+        eprintln!("chdir:              {chdir:?}");
+        eprintln!("ignore_environment: {ignore_environment:?}");
+        eprintln!("null:               {null:?}");
+        eprintln!("unset:              {unset:?}");
+        eprintln!("kv_pair:            {kv_pair:?}");
     }
 
     if let Some(mut cmd) = command.split_first() {
@@ -77,14 +77,14 @@ pub fn env_command(
             let symlink_path = temp_dir.join(arg);
             let cmd_path = cmd.0;
 
-            let cmd_path_abs = match which_command(&false, cmd_path, &true) {
+            let cmd_path_abs = match which_command(false, cmd_path, true) {
                 Ok(Some(path)) => path,
                 Ok(None) => {
-                    eprintln!("'{}': No such file or directory", cmd_path);
+                    eprintln!("'{cmd_path}': No such file or directory");
                     std::process::exit(1);
                 }
                 Err(e) => {
-                    eprintln!("Error: {}", e);
+                    eprintln!("Error: {e}");
                     std::process::exit(1);
                 }
             };
@@ -112,18 +112,17 @@ pub fn env_command(
         let mut command = Command::new(cmd.0);
         command.args(cmd.1);
 
-        if *ignore_environment {
+        if ignore_environment {
             command.env_clear();
         }
 
-        for line in kv_pair.iter() {
+        for line in kv_pair {
             let kv_pair = KVPair::parse(line)?;
             command.env(kv_pair.key, kv_pair.value);
         }
 
-        let status = match command.status() {
-            Ok(s) => s,
-            Err(_) => bail!("failed to execute command"),
+        let Ok(status) = command.status() else {
+            bail!("failed to execute command")
         };
         std::process::exit(status.code().unwrap_or(1));
     };
