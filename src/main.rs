@@ -6,8 +6,8 @@ use clap_complete::Shell;
 use rizzybox::{consts::INSTALLABLE_BINS, parse_kv_pair};
 
 use crate::command::{
-    basename::*, cat::*, clear::*, dirname::*, echo::*, env::*, expand::*, ls::*, r#false::*,
-    r#true::*, sh::*, sleep::*, stem::*, uname::*, which::*, yes::*,
+    basename::*, cat::*, clear::*, dirname::*, echo::*, env::*, expand::*, ls::*, mkdir::*,
+    r#false::*, r#true::*, sh::*, sleep::*, stem::*, uname::*, which::*, yes::*,
 };
 
 mod command;
@@ -216,6 +216,18 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
 
         #[arg(help = "path to list", default_value = ".")]
         path: String,
+    },
+    #[command(about = "Create directories if they do not already exist")]
+    Mkdir {
+        #[arg(required = true, help = "directories to create")]
+        dirs: Vec<String>,
+
+        // TODO: implement mode
+        // #[arg(long, short, help = "set file mode (as in chmod), not a=rwx - umask", value_parser = parse_kv_pair)]
+        // mode: String,
+
+        #[arg(short, long, env = "RZ_MKDIR_PARENTS", help = "create parent directories as needed")]
+        parents: bool,
     },
     #[command(about = "A shell.")]
     Sh {},
@@ -460,6 +472,9 @@ fn main() -> Result<()> {
             }
             Commands::Ls { all, path } => {
                 ls_command(all, &path)?;
+            }
+            Commands::Mkdir { dirs, parents } => {
+                mkdir_command(dirs, parents)?;
             }
             Commands::Sh {} => {
                 sh_command()?;
