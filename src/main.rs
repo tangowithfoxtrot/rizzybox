@@ -260,7 +260,6 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
         #[arg(
             long,
             short = 's',
-            default_value_t = true,
             help = "print the kernel name"
         )]
         kernel: bool,

@@ -1,6 +1,5 @@
 use anyhow::Result;
-use libc::uname;
-use std::{collections::HashSet, env::consts::OS, ffi::CStr};
+use rustix::system::uname;
 
 #[derive(Debug)]
 struct UtsName {
@@ -12,45 +11,121 @@ struct UtsName {
 }
 
 impl UtsName {
-    fn new() -> Result<UtsName, &'static str> {
-        let mut utsname = unsafe { std::mem::zeroed() };
+    /// Create a new UtsName struct from the system's uname information
+    fn new() -> Result<Self> {
+        let uname = uname();
+        Ok(Self {
+            sysname: uname.sysname().to_string_lossy().into_owned(),
+            nodename: uname.nodename().to_string_lossy().into_owned(),
+            release: uname.release().to_string_lossy().into_owned(),
+            version: uname.version().to_string_lossy().into_owned(),
+            machine: uname.machine().to_string_lossy().into_owned(),
+        })
+    }
 
-        if unsafe { uname(&mut utsname) } != 0 {
-            return Err("Failed to get uname information");
+    /// Get the operating system name based on runtime information
+    fn get_os_string(&self) -> String {
+        match self.sysname.as_str() {
+            "Linux" => {
+                // Check for Android
+                if std::path::Path::new("/system/bin/adb").exists()
+                    || std::path::Path::new("/system/build.prop").exists()
+                {
+                    "Android".to_string()
+                } else {
+                    // Check for common GNU/Linux indicators
+                    if std::path::Path::new("/usr/bin/gnu-gcc").exists()
+                        || std::path::Path::new("/etc/debian_version").exists()
+                        || std::path::Path::new("/etc/redhat-release").exists()
+                    {
+                        "GNU/Linux".to_string()
+                    } else {
+                        "Linux".to_string()
+                    }
+                }
+            }
+            "Darwin" => {
+                if self.machine.starts_with("iPhone") || self.machine.starts_with("iPad") {
+                    "iOS".to_string()
+                } else {
+                    "Darwin".to_string()
+                }
+            }
+            "FreeBSD" => "FreeBSD".to_string(),
+            "DragonFly" => "DragonFly".to_string(),
+            "OpenBSD" => "OpenBSD".to_string(),
+            "SunOS" => "Solaris".to_string(),
+            "Windows" => "💩".to_string(),
+            other => other.to_string(),
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    /// Format output according to requested flags
+    fn format_output(
+        &self,
+        all: bool,
+        kernel: bool,
+        nodename: bool,
+        kernel_release: bool,
+        kernel_version: bool,
+        machine: bool,
+        operating_system: bool,
+    ) -> String {
+        if all {
+            return format!(
+                "{} {} {} {} {} {}",
+                self.sysname,
+                self.nodename,
+                self.release,
+                self.version,
+                self.machine,
+                self.get_os_string()
+            );
         }
 
-        Ok(UtsName {
-            sysname: unsafe {
-                CStr::from_ptr(utsname.sysname.as_ptr())
-                    .to_string_lossy()
-                    .into_owned()
-            },
-            nodename: unsafe {
-                CStr::from_ptr(utsname.nodename.as_ptr())
-                    .to_string_lossy()
-                    .into_owned()
-            },
-            release: unsafe {
-                CStr::from_ptr(utsname.release.as_ptr())
-                    .to_string_lossy()
-                    .into_owned()
-            },
-            version: unsafe {
-                CStr::from_ptr(utsname.version.as_ptr())
-                    .to_string_lossy()
-                    .into_owned()
-            },
-            machine: unsafe {
-                CStr::from_ptr(utsname.machine.as_ptr())
-                    .to_string_lossy()
-                    .into_owned()
-            },
-        })
+        let mut parts = Vec::new();
+
+        let no_args_passed = !kernel
+            && !nodename
+            && !kernel_release
+            && !kernel_version
+            && !machine
+            && !operating_system;
+
+        // Default to kernel name if no flags specified
+        if no_args_passed {
+            parts.push(self.sysname.clone());
+        } else {
+            // Add parts according to flags
+            if kernel {
+                parts.push(self.sysname.clone());
+            }
+            if nodename {
+                parts.push(self.nodename.clone());
+            }
+            if kernel_release {
+                parts.push(self.release.clone());
+            }
+            if kernel_version {
+                parts.push(self.version.clone());
+            }
+            if machine {
+                parts.push(self.machine.clone());
+            }
+            if operating_system {
+                parts.push(self.get_os_string());
+            }
+        }
+
+        parts.join(" ")
     }
 }
 
 pub fn arch_command() -> Result<()> {
-    uname_command(false, false, false, false, false, true, false)
+    let utsname = UtsName::new()?;
+    println!("{}", utsname.machine);
+    Ok(())
 }
 
 pub fn uname_command(
@@ -62,79 +137,19 @@ pub fn uname_command(
     machine: bool,
     operating_system: bool,
 ) -> Result<()> {
-    // TODO: figure out how to get this at runtime
-    let os_string = match OS {
-        "linux" => "GNU/Linux",
-        "macos" => "Darwin",
-        "ios" => "iOS",
-        "freebsd" => "FreeBSD",
-        "dragonfly" => "Dragonfly",
-        "openbsd" => "OpenBSD",
-        "solaris" => "Solaris",
-        "android" => "Android",
-        "windows" => "💩",
-        _ => "",
-    };
-    match UtsName::new() {
-        Ok(utsname) => {
-            if all {
-                println!(
-                    "{} {} {} {} {} {}",
-                    utsname.sysname,
-                    utsname.nodename,
-                    utsname.release,
-                    utsname.version,
-                    utsname.machine,
-                    os_string
-                );
-                return Ok(());
-            }
+    let utsname = UtsName::new()?;
+    println!(
+        "{}",
+        utsname.format_output(
+            all,
+            kernel,
+            nodename,
+            kernel_release,
+            kernel_version,
+            machine,
+            operating_system
+        )
+    );
 
-            let mut to_print = HashSet::new();
-            // FIXME: this is stinky. do something better to workaround the fact that *kernel is a default arg
-            if kernel
-                && !nodename
-                && !kernel_release
-                && !kernel_version
-                && !machine
-                && !operating_system
-            {
-                to_print.insert(utsname.sysname);
-            }
-            if nodename {
-                to_print.insert(utsname.nodename);
-            }
-            if kernel_release {
-                to_print.insert(
-                    utsname
-                        .release
-                        .split_ascii_whitespace()
-                        .last()
-                        .expect("kernel release should exist")
-                        .to_string(),
-                );
-            }
-            if kernel_version {
-                to_print.insert(utsname.version);
-            }
-            if machine {
-                to_print.insert(utsname.machine);
-            }
-            if operating_system {
-                to_print.insert(os_string.to_string());
-            }
-            println!(
-                "{}",
-                to_print
-                    .into_iter()
-                    .collect::<Vec<String>>()
-                    .join(" ")
-                    .trim_end()
-            );
-        }
-        Err(e) => {
-            eprintln!("{e}");
-        }
-    }
     Ok(())
 }
