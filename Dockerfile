@@ -5,7 +5,6 @@ FROM rust:1.85-alpine AS builder
 
 # Set build arguments
 ARG TARGETPLATFORM
-ARG BUILDPLATFORM
 
 # Install build dependencies
 RUN apk add --no-cache musl-dev gcc
@@ -26,21 +25,8 @@ RUN cargo build --release || true
 COPY . .
 
 # Build the application based on the target platform
-RUN <<EOF
-  case "$TARGETPLATFORM" in
-    *"linux/amd64"*)
-      echo "building for linux/amd64"
-      cargo build --release
-      mv ./target/release/rizzybox /bin/rizzybox;;
-    *"linux/arm64"*)
-      echo "building for linux/arm64"
-      cargo build --release
-      mv ./target/release/rizzybox /bin/rizzybox;;
-    *)
-      echo "unsupported target platform: $TARGETPLATFORM"
-      exit 1;;
-  esac
-EOF
+RUN cargo build --release && \
+  mv ./target/release/rizzybox /bin/rizzybox
 
 # Create symlinks for commands provided by rizzybox
 RUN <<EOF
