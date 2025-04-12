@@ -225,8 +225,12 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
         // TODO: implement mode
         // #[arg(long, short, help = "set file mode (as in chmod), not a=rwx - umask", value_parser = parse_kv_pair)]
         // mode: String,
-
-        #[arg(short, long, env = "RZ_MKDIR_PARENTS", help = "create parent directories as needed")]
+        #[arg(
+            short,
+            long,
+            env = "RZ_MKDIR_PARENTS",
+            help = "create parent directories as needed"
+        )]
         parents: bool,
     },
     #[command(about = "A shell.")]
