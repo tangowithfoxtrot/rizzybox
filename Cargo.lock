@@ -1095,6 +1095,7 @@ dependencies = [
  "bat",
  "clap",
  "clap_complete",
+ "libc",
  "predicates",
  "rustix",
  "rusty-hook",

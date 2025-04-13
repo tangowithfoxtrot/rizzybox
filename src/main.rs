@@ -3,11 +3,11 @@ use std::env;
 use anyhow::{Context, Result};
 use clap::{ArgAction, CommandFactory, Parser, Subcommand};
 use clap_complete::Shell;
-use rizzybox::{consts::INSTALLABLE_BINS, parse_kv_pair};
+use rizzybox::{consts::INSTALLABLE_BINS, parse_colon_separated_pair, parse_kv_pair, UserGroupPair};
 
 use crate::command::{
-    basename::*, cat::*, clear::*, dirname::*, echo::*, env::*, expand::*, ls::*, mkdir::*,
-    r#false::*, r#true::*, sh::*, sleep::*, stem::*, uname::*, which::*, yes::*,
+    basename::*, cat::*, chroot::*, clear::*, dirname::*, echo::*, env::*, expand::*, ls::*,
+    mkdir::*, r#false::*, r#true::*, sh::*, sleep::*, stem::*, uname::*, which::*, yes::*,
 };
 
 mod command;
@@ -103,6 +103,27 @@ enum Commands {
         list_themes: bool,
     },
     Clear {},
+    #[command(about = "Run COMMAND with root directory set to NEWROOT")]
+    Chroot {
+        #[arg(help = "new root directory")]
+        new_root: String,
+
+        #[arg(
+                long,
+                short,
+                help = "specify user and group (ID or name) to use",
+                value_parser = parse_colon_separated_pair,
+            )]
+        userspec: Option<UserGroupPair>,
+
+        #[arg(
+            help = "command to run in the new root",
+            default_value = "/bin/sh",
+            // FIXME: this requires the command to be passed via `--`, which differs from coreutils implementation
+            last = true
+        )]
+        command: Vec<String>,
+    },
     Completions {
         #[arg(help = "the shell to generate completions for")]
         shell: Option<Shell>,
@@ -257,11 +278,7 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
         #[arg(long, short, default_value_t = false, help = "print all information")]
         all: bool,
 
-        #[arg(
-            long,
-            short = 's',
-            help = "print the kernel name"
-        )]
+        #[arg(long, short = 's', help = "print the kernel name")]
         kernel: bool,
 
         #[arg(
@@ -420,6 +437,13 @@ fn main() -> Result<()> {
                 cat_command(&file, &language, &theme, show_all, list_themes)?;
             }
             Commands::Clear {} => clear_command()?,
+            Commands::Chroot {
+                new_root,
+                userspec,
+                command,
+            } => {
+                chroot_command(&new_root, userspec.as_ref(), command)?;
+            }
             Commands::Completions { shell } => {
                 // FIXME: this probably won't work when commands are invoked in their symlinked form (`echo`, `env`, `cat`)
                 let Some(shell) = shell.or_else(Shell::from_env) else {

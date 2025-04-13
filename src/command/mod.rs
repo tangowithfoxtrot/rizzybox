@@ -1,6 +1,7 @@
 pub mod basename;
 pub mod cat;
 pub mod clear;
+pub mod chroot;
 pub mod dirname;
 pub mod echo;
 pub mod env;
