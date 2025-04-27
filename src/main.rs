@@ -257,11 +257,7 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
         #[arg(long, short, default_value_t = false, help = "print all information")]
         all: bool,
 
-        #[arg(
-            long,
-            short = 's',
-            help = "print the kernel name"
-        )]
+        #[arg(long, short = 's', help = "print the kernel name")]
         kernel: bool,
 
         #[arg(
@@ -303,6 +299,9 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
             help = "print the operating system"
         )]
         operating_system: bool,
+
+        #[arg(long, short, help = "the ISA format to use for CPU info")]
+        isa_format: IsaFormat,
     },
     Which {
         #[arg(
@@ -499,6 +498,7 @@ fn main() -> Result<()> {
                 kernel_version,
                 machine,
                 operating_system,
+                isa_format,
             } => {
                 uname_command(
                     all,
@@ -508,6 +508,7 @@ fn main() -> Result<()> {
                     kernel_version,
                     machine,
                     operating_system,
+                    isa_format,
                 )?;
             }
             Commands::Which {

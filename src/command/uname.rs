@@ -1,6 +1,21 @@
 use anyhow::Result;
 use rustix::system::uname;
 
+#[derive(Debug, Clone, Copy, clap::ValueEnum)]
+/// Enum for ISA format
+pub enum IsaFormat {
+    /// Whatever the system returns
+    Default,
+    /// ISA strings typically used by Docker
+    Docker,
+    /// ISA strings typically used by LLVM
+    Llvm,
+    /// ISA strings typically used by Rust
+    Rust,
+    /// The most basic ISA strings (e.g., x86, arm)
+    Generic,
+}
+
 #[derive(Debug)]
 struct UtsName {
     sysname: String,
@@ -60,6 +75,39 @@ impl UtsName {
         }
     }
 
+    fn format_machine_arch(&self, isa_format: IsaFormat) -> String {
+        let native_arch = self.machine.as_str();
+
+        match isa_format {
+            IsaFormat::Default => native_arch.to_string(),
+
+            IsaFormat::Docker => match native_arch {
+                "x86_64" => "amd64".to_string(),
+                "aarch64" => "arm64".to_string(),
+                "armv7l" => "armhf".to_string(),
+                "powerpc64le" => "ppc64le".to_string(),
+                "i386" | "i686" => "386".to_string(),
+                _ => native_arch.to_string(),
+            },
+
+            IsaFormat::Rust | IsaFormat::Llvm => match native_arch {
+                "amd64" => "x86_64".to_string(),
+                "arm64" => "aarch64".to_string(),
+                "armhf" => "armv7".to_string(),
+                "ppc64le" => "powerpc64le".to_string(),
+                "386" => "i686".to_string(),
+                _ => native_arch.to_string(),
+            },
+
+            IsaFormat::Generic => match native_arch {
+                "x86_64" | "amd64" | "i686" | "i386" => "x86".to_string(),
+                "aarch64" | "arm64" | "armv7l" => "arm".to_string(),
+                "powerpc64le" | "ppc64le" => "ppc".to_string(),
+                _ => native_arch.to_string(),
+            },
+        }
+    }
+
     #[allow(clippy::too_many_arguments)]
     /// Format output according to requested flags
     fn format_output(
@@ -71,6 +119,7 @@ impl UtsName {
         kernel_version: bool,
         machine: bool,
         operating_system: bool,
+        isa_format: IsaFormat,
     ) -> String {
         if all {
             return format!(
@@ -79,7 +128,10 @@ impl UtsName {
                 self.nodename,
                 self.release,
                 self.version,
-                self.machine,
+                match isa_format {
+                    IsaFormat::Default => self.machine.clone(),
+                    _ => self.format_machine_arch(isa_format),
+                },
                 self.get_os_string()
             );
         }
@@ -111,7 +163,10 @@ impl UtsName {
                 parts.push(self.version.clone());
             }
             if machine {
-                parts.push(self.machine.clone());
+                match isa_format {
+                    IsaFormat::Default => parts.push(self.machine.clone()),
+                    _ => parts.push(self.format_machine_arch(isa_format)),
+                }
             }
             if operating_system {
                 parts.push(self.get_os_string());
@@ -128,6 +183,7 @@ pub fn arch_command() -> Result<()> {
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn uname_command(
     all: bool,
     kernel: bool,
@@ -136,6 +192,7 @@ pub fn uname_command(
     kernel_version: bool,
     machine: bool,
     operating_system: bool,
+    isa_format: IsaFormat,
 ) -> Result<()> {
     let utsname = UtsName::new()?;
     println!(
@@ -147,7 +204,8 @@ pub fn uname_command(
             kernel_release,
             kernel_version,
             machine,
-            operating_system
+            operating_system,
+            isa_format
         )
     );
 
