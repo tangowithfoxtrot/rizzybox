@@ -8,8 +8,12 @@ anyhow = "1.0.91"
 bat = "0.24.0"
 clap = { version = "4.5.20", features = ["derive", "env"] }
 clap_complete = "4.5.33"
+env_logger = "0.11.8"
 libc = "0.2.171"
+log = "0.4.27"
 rustix = { version = "1.0.5", features = ["fs", "mount", "process", "system"] }
+styrolite = { git = "https://github.com/tangowithfoxtrot/styrolite.git", branch = "ugly-fix-for-failing-mounts" }
+users = "0.11.0"
 
 [dev-dependencies]
 assert_cmd = { version = "2.0.16" }
@@ -18,4 +22,3 @@ rusty-hook = "0.11.2"
 
 [workspace.lints.clippy]
 unwrap_used = "deny"
-

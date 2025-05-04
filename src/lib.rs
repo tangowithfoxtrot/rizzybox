@@ -1,9 +1,101 @@
+use std::io::{Error, ErrorKind};
+use std::str::FromStr;
 use std::{fs::remove_file, string::String};
+use users::{get_group_by_gid, get_group_by_name, get_user_by_name, get_user_by_uid};
 
 #[derive(Debug, Clone)]
 pub struct UserGroupPair {
     pub user: String,
     pub group: Option<String>,
+}
+
+impl UserGroupPair {
+    pub fn new(user: String, group: Option<String>) -> Self {
+        Self { user, group }
+    }
+
+    // fn default() -> Self {
+    //     Self {
+    //         user: "65534".to_string(), // nobody
+    //         group: None,
+    //     }
+    // }
+
+    pub fn resolve_ids(&self) -> std::io::Result<(u32, u32)> {
+        // If the uid and optional gid are already numeric, return them
+        if let Some(uid) = self.user.parse::<u32>().ok() {
+            if let Some(gid) = self.group.as_ref().and_then(|g| g.parse::<u32>().ok()) {
+                return Ok((uid, gid));
+            }
+        }
+
+        // Resolve user ID
+        let uid = match u32::from_str(&self.user) {
+            // If user is a numeric string
+            Ok(uid) => {
+                // Verify the UID exists
+                if get_user_by_uid(uid).is_none() {
+                    return Err(Error::new(
+                        ErrorKind::NotFound,
+                        format!("No user with uid {}", uid),
+                    ));
+                }
+                uid
+            }
+            // If user is not numeric, look up by name
+            Err(_) => match get_user_by_name(&self.user) {
+                Some(user) => user.uid(),
+                None => {
+                    return Err(Error::new(
+                        ErrorKind::NotFound,
+                        format!("User not found: {}", self.user),
+                    ))
+                }
+            },
+        };
+
+        // Resolve group ID if provided, otherwise use the user's primary group
+        let gid = if let Some(group) = &self.group {
+            match u32::from_str(group) {
+                // If group is a numeric string
+                Ok(gid) => {
+                    // Verify the GID exists
+                    if get_group_by_gid(gid).is_none() {
+                        return Err(Error::new(
+                            ErrorKind::NotFound,
+                            format!("No group with gid {}", gid),
+                        ));
+                    }
+                    gid
+                }
+                // If group is not numeric, look up by name
+                Err(_) => match get_group_by_name(group) {
+                    Some(group) => group.gid(),
+                    None => {
+                        return Err(Error::new(
+                            ErrorKind::NotFound,
+                            format!("Group not found: {}", group),
+                        ))
+                    }
+                },
+            }
+        } else {
+            // If no group provided, use the user's primary group
+            match get_user_by_uid(uid) {
+                Some(user) => user.primary_group_id(),
+                None => {
+                    return Err(Error::new(
+                        ErrorKind::NotFound,
+                        format!("Failed to get primary group for user id {}", uid),
+                    ))
+                }
+            }
+        };
+
+        log::debug!("uid: {}, gid: {}", uid, gid);
+
+        Ok((uid, gid))
+    }
 }
 
 pub mod consts {

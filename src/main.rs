@@ -1,9 +1,13 @@
 use std::env;
+use std::io::Write;
 
 use anyhow::{Context, Result};
 use clap::{ArgAction, CommandFactory, Parser, Subcommand};
 use clap_complete::Shell;
-use rizzybox::{consts::INSTALLABLE_BINS, parse_colon_separated_pair, parse_kv_pair, UserGroupPair};
+use log::debug;
+use rizzybox::{
+    consts::INSTALLABLE_BINS, parse_colon_separated_pair, parse_kv_pair, UserGroupPair,
+};
 
 use crate::command::{
     basename::*, cat::*, chroot::*, clear::*, dirname::*, echo::*, env::*, expand::*, ls::*,
@@ -364,6 +368,12 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
 }
 
 fn main() -> Result<()> {
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("warn"))
+        .format(|buf, record| writeln!(buf, "{}: {}", record.level(), record.args()))
+        .init();
+
+    debug!("Initialized logger");
+
     let args: Vec<String> = env::args().collect();
     let binary_name = args.first().map(String::as_str).unwrap_or_default();
 
