@@ -7,7 +7,8 @@ use rizzybox::{consts::INSTALLABLE_BINS, parse_kv_pair};
 
 use crate::command::{
     basename::*, cat::*, clear::*, dirname::*, echo::*, env::*, expand::*, ls::*, mkdir::*,
-    r#false::*, r#true::*, sh::*, sleep::*, stem::*, uname::*, which::*, yes::*,
+    nproc::nproc_command, r#false::*, r#true::*, sh::*, sleep::*, stem::*, uname::*, which::*,
+    yes::*,
 };
 
 mod command;
@@ -232,6 +233,17 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
             help = "create parent directories as needed"
         )]
         parents: bool,
+    },
+    Nproc {
+        #[arg(
+            short,
+            long,
+            help = "print the number of cores available to the system"
+        )]
+        all: bool,
+
+        #[arg(short, long, help = "ignore up to N cores", default_value_t = 0)]
+        ignore: usize,
     },
     #[command(about = "A shell.")]
     Sh {},
@@ -478,6 +490,7 @@ fn main() -> Result<()> {
             Commands::Mkdir { dirs, parents } => {
                 mkdir_command(dirs, parents)?;
             }
+            Commands::Nproc { all, ignore } => nproc_command(all, ignore)?,
             Commands::Sh {} => {
                 sh_command()?;
             }

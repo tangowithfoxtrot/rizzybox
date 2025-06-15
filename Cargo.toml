@@ -8,6 +8,7 @@ anyhow = "1.0.91"
 bat = "0.24.0"
 clap = { version = "4.5.20", features = ["derive", "env"] }
 clap_complete = "4.5.33"
+num_cpus = "1.17.0"
 rustix = { version = "1.0.5", features = ["process", "system"] }
 
 [dev-dependencies]
