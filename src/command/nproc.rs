@@ -10,25 +10,16 @@ pub fn nproc_command(
 ) -> Result<()> {
     let mut cores = if all {
         num_cpus::get_physical()
+    } else if omp_num_threads.is_some() {
+        // early optimization: skip the check if OMP_NUM_THREADS is set
+        omp_num_threads.expect("OMP_NUM_THREADS should be set")
+    } else if let Some(limit) = omp_num_limit {
+        // OMP_NUM_LIMIT is applied only if less than sys_cores
+        let sys_cores = num_cpus::get();
+        if limit < sys_cores { limit } else { sys_cores }
     } else {
         num_cpus::get()
     };
-
-    let sys_cores = cores;
-
-    if !all {
-        // OMP_NUM_LIMIT is applied first
-        if let Some(limit) = omp_num_limit {
-            if limit < sys_cores {
-                cores = limit;
-            }
-        }
-
-        // then OMP_NUM_THREADS should override everything
-        if let Some(threads) = omp_num_threads {
-            cores = threads;
-        }
-    }
 
     if ignore >= cores {
         // prevent underflow by returning minimum allowed
@@ -36,9 +27,7 @@ pub fn nproc_command(
         return Ok(());
     }
 
-    if ignore > 0 {
-        cores -= ignore;
-    }
+    cores -= ignore;
 
     println!("{cores}");
 
