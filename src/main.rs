@@ -7,8 +7,7 @@ use rizzybox::{consts::INSTALLABLE_BINS, parse_kv_pair};
 
 use crate::command::{
     basename::*, cat::*, clear::*, dirname::*, echo::*, env::*, expand::*, ls::*, mkdir::*,
-    nproc::nproc_command, r#false::*, r#true::*, sh::*, sleep::*, stem::*, uname::*, which::*,
-    yes::*,
+    nproc::*, r#false::*, r#true::*, sh::*, sleep::*, stem::*, uname::*, which::*, yes::*,
 };
 
 mod command;
@@ -242,8 +241,21 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
         )]
         all: bool,
 
-        #[arg(short, long, help = "ignore up to N cores", default_value_t = 0)]
+        #[arg(
+            short,
+            long,
+            value_name = "N",
+            hide_default_value = true,
+            help = "ignore up to N cores",
+            default_value_t = 0
+        )]
         ignore: usize,
+
+        #[arg(long, env = "OMP_NUM_LIMIT", help = "maximum threads to report")]
+        omp_num_limit: Option<usize>,
+
+        #[arg(long, env = "OMP_NUM_THREADS", help = "minimum threads to report")]
+        omp_num_threads: Option<usize>,
     },
     #[command(about = "A shell.")]
     Sh {},
@@ -490,7 +502,12 @@ fn main() -> Result<()> {
             Commands::Mkdir { dirs, parents } => {
                 mkdir_command(dirs, parents)?;
             }
-            Commands::Nproc { all, ignore } => nproc_command(all, ignore)?,
+            Commands::Nproc {
+                all,
+                ignore,
+                omp_num_limit,
+                omp_num_threads,
+            } => nproc_command(all, ignore, omp_num_limit, omp_num_threads)?,
             Commands::Sh {} => {
                 sh_command()?;
             }
