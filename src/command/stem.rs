@@ -74,7 +74,9 @@ impl EngConsonant {
         }
     }
 
-    fn is_consonant(c: char) -> bool { Self::from_char(c).is_some() }
+    fn is_consonant(c: char) -> bool {
+        Self::from_char(c).is_some()
+    }
 }
 
 #[derive(Debug)]

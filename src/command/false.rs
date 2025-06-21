@@ -1,3 +1,5 @@
 use anyhow::Result;
 
-pub fn false_command() -> Result<()> { std::process::exit(1); }
+pub fn false_command() -> Result<()> {
+    std::process::exit(1);
+}

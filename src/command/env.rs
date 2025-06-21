@@ -19,8 +19,12 @@ struct KVPair<'a> {
 
 impl<'a> KVPair<'a> {
     #[allow(dead_code)]
-    fn new() -> Self { Self { key: "", value: "" } }
-    fn from(key: &'a str, value: &'a str) -> Self { Self { key, value } }
+    fn new() -> Self {
+        Self { key: "", value: "" }
+    }
+    fn from(key: &'a str, value: &'a str) -> Self {
+        Self { key, value }
+    }
     fn parse(line: &'a str) -> Result<Self> {
         if let Some((k, v)) = line.split_once('=') {
             Ok(Self { key: k, value: v })
@@ -28,7 +32,9 @@ impl<'a> KVPair<'a> {
             bail!("failed to parse key-value pair in line: {line}")
         }
     }
-    fn as_string(&self) -> String { format!("{}={}", self.key, self.value) }
+    fn as_string(&self) -> String {
+        format!("{}={}", self.key, self.value)
+    }
 }
 
 impl Display for KVPair<'_> {

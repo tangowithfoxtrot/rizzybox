@@ -16,7 +16,11 @@ pub fn nproc_command(
     } else if let Some(limit) = omp_num_limit {
         // OMP_NUM_LIMIT is applied only if less than sys_cores
         let sys_cores = num_cpus::get();
-        if limit < sys_cores { limit } else { sys_cores }
+        if limit < sys_cores {
+            limit
+        } else {
+            sys_cores
+        }
     } else {
         num_cpus::get()
     };
