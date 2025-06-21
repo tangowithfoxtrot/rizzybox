@@ -101,6 +101,9 @@ enum Commands {
 
         #[arg(long, help = "list available themes")]
         list_themes: bool,
+
+        #[arg(long, short, help = "number all output lines")]
+        number_lines: bool,
     },
     Clear {},
     Completions {
@@ -444,8 +447,16 @@ fn main() -> Result<()> {
                 theme,
                 show_all,
                 list_themes,
+                number_lines,
             } => {
-                cat_command(&file, &language, &theme, show_all, list_themes)?;
+                cat_command(
+                    &file,
+                    &language,
+                    &theme,
+                    show_all,
+                    list_themes,
+                    number_lines,
+                )?;
             }
             Commands::Clear {} => clear_command()?,
             Commands::Completions { shell } => {

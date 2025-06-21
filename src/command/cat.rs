@@ -8,6 +8,7 @@ pub fn cat_command(
     theme: &str,
     show_all: bool,
     list_themes: bool,
+    number_lines: bool,
 ) -> Result<()> {
     let mut pretty_printer = PrettyPrinter::new();
     if list_themes {
@@ -25,6 +26,7 @@ pub fn cat_command(
             .theme(theme)
             .colored_output(std::io::stdout().is_terminal())
             .show_nonprintable(show_all)
+            .line_numbers(number_lines)
             .print()
             .is_ok()
         {}
