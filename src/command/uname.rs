@@ -1,19 +1,27 @@
 use anyhow::Result;
 use rustix::system::uname;
 
-#[derive(Debug, Clone, Copy, clap::ValueEnum)]
+#[derive(Default, Debug, Clone, Copy, clap::ValueEnum)]
 /// Enum for ISA format
+#[allow(non_camel_case_types)] // otherwise, we'd need serde or something similar
 pub enum IsaFormat {
     /// Whatever the system returns
-    Default,
+    #[default]
+    default,
     /// ISA strings typically used by Docker
-    Docker,
+    docker,
     /// ISA strings typically used by LLVM
-    Llvm,
+    llvm,
     /// ISA strings typically used by Rust
-    Rust,
+    rust,
     /// The most basic ISA strings (e.g., x86, arm)
-    Generic,
+    generic,
+}
+
+impl std::fmt::Display for IsaFormat {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{self:?}")
+    }
 }
 
 #[derive(Debug)]
@@ -79,9 +87,9 @@ impl UtsName {
         let native_arch = self.machine.as_str();
 
         match isa_format {
-            IsaFormat::Default => native_arch.to_string(),
+            IsaFormat::default => native_arch.to_string(),
 
-            IsaFormat::Docker => match native_arch {
+            IsaFormat::docker => match native_arch {
                 "x86_64" => "amd64".to_string(),
                 "aarch64" => "arm64".to_string(),
                 "armv7l" => "armhf".to_string(),
@@ -90,7 +98,7 @@ impl UtsName {
                 _ => native_arch.to_string(),
             },
 
-            IsaFormat::Rust | IsaFormat::Llvm => match native_arch {
+            IsaFormat::rust | IsaFormat::llvm => match native_arch {
                 "amd64" => "x86_64".to_string(),
                 "arm64" => "aarch64".to_string(),
                 "armhf" => "armv7".to_string(),
@@ -99,7 +107,7 @@ impl UtsName {
                 _ => native_arch.to_string(),
             },
 
-            IsaFormat::Generic => match native_arch {
+            IsaFormat::generic => match native_arch {
                 "x86_64" | "amd64" | "i686" | "i386" => "x86".to_string(),
                 "aarch64" | "arm64" | "armv7l" => "arm".to_string(),
                 "powerpc64le" | "ppc64le" => "ppc".to_string(),
@@ -129,7 +137,7 @@ impl UtsName {
                 self.release,
                 self.version,
                 match isa_format {
-                    IsaFormat::Default => self.machine.clone(),
+                    IsaFormat::default => self.machine.clone(),
                     _ => self.format_machine_arch(isa_format),
                 },
                 self.get_os_string()
@@ -164,7 +172,7 @@ impl UtsName {
             }
             if machine {
                 match isa_format {
-                    IsaFormat::Default => parts.push(self.machine.clone()),
+                    IsaFormat::default => parts.push(self.machine.clone()),
                     _ => parts.push(self.format_machine_arch(isa_format)),
                 }
             }

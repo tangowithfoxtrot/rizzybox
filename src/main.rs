@@ -324,7 +324,12 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
         )]
         operating_system: bool,
 
-        #[arg(long, short, help = "the ISA format to use for CPU info")]
+        #[arg(
+            long,
+            short,
+            help = "the ISA format to use for CPU info",
+            default_value_t
+        )]
         isa_format: IsaFormat,
     },
     Which {
