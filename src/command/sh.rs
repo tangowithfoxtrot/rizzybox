@@ -76,13 +76,13 @@ pub fn sh_command() -> Result<()> {
                             }
 
                             if let Err(e) = env::set_current_dir(&dir) {
-                                eprintln!("cd: {}: {}", dir, e);
+                                eprintln!("cd: {dir}: {e}");
                             }
                         }
-                        Err(msg) => eprintln!("cd: {}", msg),
+                        Err(msg) => eprintln!("cd: {msg}"),
                     }
                 }
-                Err(e) => eprintln!("{}", e),
+                Err(e) => eprintln!("{e}"),
             },
             "exit" => match parse_command::<builtins::ExitCommand>("exit", args) {
                 Ok(cmd) => std::process::exit(cmd.code),
@@ -94,7 +94,7 @@ pub fn sh_command() -> Result<()> {
                         env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
                     let path = current_dir.to_str().unwrap_or(".");
                     if cmd.logical {
-                        println!("{}", path);
+                        println!("{path}");
                     } else if cmd.physical {
                         // Get the physical path
                         let physical_path = std::fs::canonicalize(current_dir)
@@ -102,10 +102,10 @@ pub fn sh_command() -> Result<()> {
                         println!("{}", physical_path.display());
                     } else {
                         // Default behavior
-                        println!("{}", path);
+                        println!("{path}");
                     }
                 }
-                Err(e) => eprintln!("{}", e),
+                Err(e) => eprintln!("{e}"),
             },
             _ => {
                 // Handle external commands
@@ -115,9 +115,9 @@ pub fn sh_command() -> Result<()> {
                     }
                     Err(e) => {
                         if e.kind() == std::io::ErrorKind::NotFound {
-                            eprintln!("{}: command not found", command);
+                            eprintln!("{command}: command not found");
                         } else {
-                            eprintln!("{}: {}", command, e);
+                            eprintln!("{command}: {e}");
                         }
                     }
                 }

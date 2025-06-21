@@ -33,7 +33,7 @@ pub fn yes_command(text: &str, amount: usize, duration: Option<f32>) -> Result<(
 
             if dur == Duration::ZERO {
                 loop {
-                    writeln!(&mut w, "{}", to_print).unwrap_or_default();
+                    writeln!(&mut w, "{to_print}").unwrap_or_default();
                 }
             } else {
                 let start = Instant::now();

@@ -384,7 +384,7 @@ fn main() -> Result<()> {
         .any(|&bin| binary_name.ends_with(bin))
     {
         // shift binary name to subcommand name
-        let subcommand_name = binary_name.split('/').last().unwrap_or(binary_name);
+        let subcommand_name = binary_name.split('/').next_back().unwrap_or(binary_name);
         let mut new_args = vec![binary_name.to_string(), subcommand_name.to_string()];
         new_args.extend(args.into_iter().skip(1));
         new_args
