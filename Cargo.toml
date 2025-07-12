@@ -6,8 +6,8 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.98"
 bat = "0.25.0"
-clap = { version = "4.5.40", features = ["derive", "env"] }
-clap_complete = "4.5.54"
+clap = { version = "4.5.41", features = ["derive", "env"] }
+clap_complete = "4.5.55"
 num_cpus = "1.17.0"
 rustix = { version = "1.0.7", features = ["process", "system"] }
 
