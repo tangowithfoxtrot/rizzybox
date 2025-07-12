@@ -1,11 +1,4 @@
-use anyhow::Result;
-
-pub fn basename_command(
-    mut multiple: bool,
-    name: &[String],
-    suffix: Option<&String>,
-    zero: bool,
-) -> Result<()> {
+pub fn basename_command(mut multiple: bool, name: &[String], suffix: Option<&String>, zero: bool) {
     let delimiter = '/';
 
     for name in name {
@@ -22,17 +15,12 @@ pub fn basename_command(
             if output.ends_with(suffix) {
                 output = output.trim_end_matches(suffix);
             }
-        };
-
-        if zero {
-            print!("{output}\0");
-        } else {
-            println!("{output}");
         }
+
+        print!("{output}{}", if zero { "\0" } else { "\n" });
 
         if !multiple {
             break;
-        };
+        }
     }
-    Ok(())
 }

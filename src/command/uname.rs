@@ -1,4 +1,3 @@
-use anyhow::Result;
 use rustix::system::uname;
 
 #[derive(Default, Debug, Clone, Copy, clap::ValueEnum)]
@@ -34,16 +33,16 @@ struct UtsName {
 }
 
 impl UtsName {
-    /// Create a new UtsName struct from the system's uname information
-    fn new() -> Result<Self> {
+    /// Create a new `UtsName` struct from the system's uname information
+    fn new() -> Self {
         let uname = uname();
-        Ok(Self {
+        Self {
             sysname: uname.sysname().to_string_lossy().into_owned(),
             nodename: uname.nodename().to_string_lossy().into_owned(),
             release: uname.release().to_string_lossy().into_owned(),
             version: uname.version().to_string_lossy().into_owned(),
             machine: uname.machine().to_string_lossy().into_owned(),
-        })
+        }
     }
 
     /// Get the operating system name based on runtime information
@@ -116,7 +115,7 @@ impl UtsName {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
+    #[allow(clippy::too_many_arguments, clippy::fn_params_excessive_bools)]
     /// Format output according to requested flags
     fn format_output(
         &self,
@@ -185,13 +184,12 @@ impl UtsName {
     }
 }
 
-pub fn arch_command() -> Result<()> {
-    let utsname = UtsName::new()?;
+pub fn arch_command() {
+    let utsname = UtsName::new();
     println!("{}", utsname.machine);
-    Ok(())
 }
 
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::fn_params_excessive_bools)]
 pub fn uname_command(
     all: bool,
     kernel: bool,
@@ -201,8 +199,8 @@ pub fn uname_command(
     machine: bool,
     operating_system: bool,
     isa_format: IsaFormat,
-) -> Result<()> {
-    let utsname = UtsName::new()?;
+) {
+    let utsname = UtsName::new();
     println!(
         "{}",
         utsname.format_output(
@@ -216,6 +214,4 @@ pub fn uname_command(
             isa_format
         )
     );
-
-    Ok(())
 }

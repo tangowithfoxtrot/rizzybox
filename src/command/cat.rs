@@ -1,4 +1,3 @@
-use anyhow::Result;
 use bat::PrettyPrinter;
 use std::io::IsTerminal;
 
@@ -9,14 +8,14 @@ pub fn cat_command(
     show_all: bool,
     list_themes: bool,
     number_lines: bool,
-) -> Result<()> {
+) {
     let mut pretty_printer = PrettyPrinter::new();
     if list_themes {
         let themes = pretty_printer.themes();
         for theme in themes {
             println!("{theme}");
         }
-        return Ok(());
+        return;
     }
 
     let mut print_file = |file: &str| {
@@ -39,6 +38,4 @@ pub fn cat_command(
             print_file(file);
         }
     }
-
-    Ok(())
 }

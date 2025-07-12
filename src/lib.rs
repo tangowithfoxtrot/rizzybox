@@ -27,6 +27,9 @@ pub fn handle_error<T>(result: Result<T, std::io::Error>, message: &str) -> T {
     }
 }
 
+/// # Errors
+///
+/// Will return `Err` if the key-value pair could not be parsed.
 pub fn parse_kv_pair(s: &str) -> Result<String, String> {
     if s.contains('=') {
         Ok(s.to_string())

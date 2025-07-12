@@ -6,9 +6,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use anyhow::Result;
-
-pub fn yes_command(text: &str, amount: usize, duration: Option<f32>) -> Result<()> {
+pub fn yes_command(text: &str, amount: usize, duration: Option<f32>) {
     let arc = Arc::new(text.to_string());
     let to_print = Arc::clone(&arc);
     let w = BufWriter::new(stdout());
@@ -50,6 +48,4 @@ pub fn yes_command(text: &str, amount: usize, duration: Option<f32>) -> Result<(
     });
 
     scheduler.join().expect("scheduler panicked");
-
-    Ok(())
 }

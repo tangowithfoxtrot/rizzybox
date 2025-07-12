@@ -19,7 +19,7 @@ pub fn which_command(all_occurrences: bool, command: &str, silent: bool) -> Resu
         let full_path = format!("{path}/{command}");
         if Path::new(&full_path).exists() {
             if !silent {
-                println!("{}", &full_path);
+                println!("{full_path}");
             }
             if !all_occurrences {
                 return Ok(Some(full_path));

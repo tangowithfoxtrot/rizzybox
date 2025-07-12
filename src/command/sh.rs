@@ -127,7 +127,7 @@ pub fn sh_command() -> Result<()> {
 }
 
 fn render_prompt(already_prompted: bool) {
-    let prompt = std::env::var("PS1").unwrap_or_else(|_| "λ ".to_owned());
+    let prompt = std::env::var("PS1").unwrap_or("λ ".to_owned());
     if already_prompted {
         eprint!("\n\r");
     }

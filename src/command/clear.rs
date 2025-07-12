@@ -1,6 +1,3 @@
-use anyhow::Result;
-
-pub fn clear_command() -> Result<()> {
+pub fn clear_command() {
     println!("\x1b[2J\x1b[H");
-    Ok(())
 }

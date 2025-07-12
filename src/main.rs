@@ -1,13 +1,29 @@
-use std::env;
+use std::{env, path::PathBuf};
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use clap::{ArgAction, CommandFactory, Parser, Subcommand};
 use clap_complete::Shell;
 use rizzybox::{consts::INSTALLABLE_BINS, parse_kv_pair};
 
 use crate::command::{
-    basename::*, cat::*, clear::*, dirname::*, echo::*, env::*, expand::*, ls::*, mkdir::*,
-    nproc::*, r#false::*, r#true::*, sh::*, sleep::*, stem::*, uname::*, which::*, yes::*,
+    basename::basename_command,
+    cat::cat_command,
+    clear::clear_command,
+    dirname::dirname_command,
+    echo::echo_command,
+    env::env_command,
+    expand::expand_command,
+    ls::ls_command,
+    mkdir::mkdir_command,
+    nproc::nproc_command,
+    r#false::false_command,
+    r#true::true_command,
+    sh::sh_command,
+    sleep::sleep_command,
+    stem::stem_command,
+    uname::{arch_command, uname_command, IsaFormat},
+    which::which_command,
+    yes::yes_command,
 };
 
 mod command;
@@ -223,11 +239,8 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
     #[command(about = "Create directories if they do not already exist")]
     Mkdir {
         #[arg(required = true, help = "directories to create")]
-        dirs: Vec<String>,
+        dirs: Vec<PathBuf>,
 
-        // TODO: implement mode
-        // #[arg(long, short, help = "set file mode (as in chmod), not a=rwx - umask", value_parser = parse_kv_pair)]
-        // mode: String,
         #[arg(
             short,
             long,
@@ -377,6 +390,7 @@ removed; if NAME contains no /'s, output '.' (meaning the current directory)."
     },
 }
 
+#[allow(clippy::too_many_lines)]
 fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
     let binary_name = args.first().map(String::as_str).unwrap_or_default();
@@ -431,7 +445,7 @@ fn main() -> Result<()> {
     if let Some(command) = cli.command {
         match command {
             Commands::Arch {} => {
-                arch_command()?;
+                arch_command();
             }
             Commands::Basename {
                 multiple,
@@ -439,7 +453,7 @@ fn main() -> Result<()> {
                 suffix,
                 zero,
             } => {
-                basename_command(multiple, &name, suffix.as_ref(), zero)?;
+                basename_command(multiple, &name, suffix.as_ref(), zero);
             }
             Commands::Cat {
                 file,
@@ -456,21 +470,19 @@ fn main() -> Result<()> {
                     show_all,
                     list_themes,
                     number_lines,
-                )?;
+                );
             }
-            Commands::Clear {} => clear_command()?,
+            Commands::Clear {} => clear_command(),
             Commands::Completions { shell } => {
-                // FIXME: this probably won't work when commands are invoked in their symlinked form (`echo`, `env`, `cat`)
                 let Some(shell) = shell.or_else(Shell::from_env) else {
-                    eprintln!("Couldn't automatically detect the shell. Run `rizzybox completions --help` for more info.");
-                    std::process::exit(1);
+                    bail!("Couldn't automatically detect the shell. Run `{} completions --help` for more info.", std::env::args().collect::<Vec<String>>()[0]);
                 };
                 let mut cmd = Cli::command();
                 let name = cmd.get_name().to_string();
                 clap_complete::generate(shell, &mut cmd, name, &mut std::io::stdout());
             }
             Commands::Dirname { name, zero } => {
-                dirname_command(&name, zero)?;
+                dirname_command(&name, zero);
             }
             Commands::Echo {
                 disable_backslash_escapes,
@@ -508,7 +520,7 @@ fn main() -> Result<()> {
                     &kv_pair,
                 )?;
             }
-            Commands::False {} => false_command()?,
+            Commands::False {} => false_command(),
             Commands::Expand { file, tabs } => {
                 expand_command(&file, &tabs)?;
             }
@@ -523,7 +535,7 @@ fn main() -> Result<()> {
                 ignore,
                 omp_num_limit,
                 omp_num_threads,
-            } => nproc_command(all, ignore, omp_num_limit, omp_num_threads)?,
+            } => nproc_command(all, ignore, omp_num_limit, omp_num_threads),
             Commands::Sh {} => {
                 sh_command()?;
             }
@@ -531,10 +543,10 @@ fn main() -> Result<()> {
                 sleep_command(&number)?;
             }
             Commands::Stem { nonewline, string } => {
-                stem_command(nonewline, &string)?;
+                stem_command(nonewline, &string);
             }
             Commands::True {} => {
-                true_command()?;
+                true_command();
             }
             Commands::Uname {
                 all,
@@ -555,7 +567,7 @@ fn main() -> Result<()> {
                     machine,
                     operating_system,
                     isa_format,
-                )?;
+                );
             }
             Commands::Which {
                 all_occurrences,
@@ -572,9 +584,9 @@ fn main() -> Result<()> {
                 amount,
                 duration,
             } => {
-                yes_command(&text, amount, duration)?;
+                yes_command(&text, amount, duration);
             }
         }
-    };
+    }
     Ok(())
 }

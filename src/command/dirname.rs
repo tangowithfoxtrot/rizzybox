@@ -1,6 +1,4 @@
-use anyhow::Result;
-
-pub fn dirname_command(name: &[String], zero: bool) -> Result<()> {
+pub fn dirname_command(name: &[String], zero: bool) {
     let delimiter = '/';
 
     for name in name {
@@ -11,11 +9,6 @@ pub fn dirname_command(name: &[String], zero: bool) -> Result<()> {
             "."
         };
 
-        if zero {
-            print!("{output}\0");
-        } else {
-            println!("{output}");
-        }
+        print!("{output}{}", if zero { "\0" } else { "\n" });
     }
-    Ok(())
 }

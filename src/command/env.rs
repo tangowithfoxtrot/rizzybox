@@ -18,10 +18,6 @@ struct KVPair<'a> {
 }
 
 impl<'a> KVPair<'a> {
-    #[allow(dead_code)]
-    fn new() -> Self {
-        Self { key: "", value: "" }
-    }
     fn from(key: &'a str, value: &'a str) -> Self {
         Self { key, value }
     }
@@ -131,7 +127,7 @@ pub fn env_command(
             bail!("failed to execute command")
         };
         std::process::exit(status.code().unwrap_or(1));
-    };
+    }
 
     let mut kv_pairs = String::new();
     for (key, value) in vars() {

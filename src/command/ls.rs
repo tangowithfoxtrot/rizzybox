@@ -13,7 +13,7 @@ pub fn ls_command(all: bool, path: &str) -> Result<()> {
                 .into_string()
                 .expect("pathbuf is file")
         );
-        std::process::exit(0);
+        return Ok(());
     }
 
     let entries = std::fs::read_dir(path_buf)?
@@ -39,7 +39,6 @@ pub fn ls_command(all: bool, path: &str) -> Result<()> {
             if all {
                 file_listings.insert(file_name);
             } else if file_name.starts_with('.') {
-                continue;
             } else {
                 file_listings.insert(file_name);
             }
