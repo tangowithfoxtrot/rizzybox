@@ -1,10 +1,34 @@
 use std::path::PathBuf;
 
-use clap::{ArgAction, Parser, Subcommand};
+use clap::{
+    builder::{
+        styling::{AnsiColor, Effects, Style},
+        Styles,
+    },
+    ArgAction, Parser, Subcommand,
+};
 use clap_complete::Shell;
 use rizzybox::parse_kv_pair;
 
 use crate::command::uname::IsaFormat;
+
+// https://github.com/crate-ci/clap-cargo/blob/master/src/style.rs
+const CARGO_STYLING: Styles = Styles::styled()
+    .error(ERROR)
+    .header(HEADER)
+    .invalid(INVALID)
+    .literal(LITERAL)
+    .placeholder(PLACEHOLDER)
+    .usage(USAGE)
+    .valid(VALID);
+
+const ERROR: Style = AnsiColor::Red.on_default().effects(Effects::BOLD);
+const HEADER: Style = AnsiColor::Green.on_default().effects(Effects::BOLD);
+const INVALID: Style = AnsiColor::Yellow.on_default().effects(Effects::BOLD);
+const LITERAL: Style = AnsiColor::Cyan.on_default().effects(Effects::BOLD);
+const PLACEHOLDER: Style = AnsiColor::Cyan.on_default();
+const USAGE: Style = AnsiColor::Green.on_default().effects(Effects::BOLD);
+const VALID: Style = AnsiColor::Cyan.on_default().effects(Effects::BOLD);
 
 #[derive(Parser)]
 #[command(
@@ -23,7 +47,8 @@ use crate::command::uname::IsaFormat;
                                       888
                                  Y8b d88P
                                   "Y88P"
-"#
+"#,
+styles = CARGO_STYLING
 )]
 pub struct Cli {
     #[command(subcommand)]
