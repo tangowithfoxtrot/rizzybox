@@ -5,7 +5,7 @@
   description = "RizzyBox Nix Flake";
 
   inputs = {
-    nixpkgs.url = "https://api.flakehub.com/f/NixOS/nixpkgs/0.2411.711934+rev-4005c3ff7505313cbc21081776ad0ce5dfd7a3ce.tar.gz";
+    nixpkgs.url = "https://api.flakehub.com/f/NixOS/nixpkgs/0.2505.809873+rev-9a094440e02a699be5c57453a092a8baf569bdad.tar.gz";
     # Provides helpers for Rust toolchains
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
@@ -37,7 +37,7 @@
     in
     {
       overlays.default = final: prev: {
-        rustToolchain = final.rust-bin.stable."1.83.0".default;
+        rustToolchain = final.rust-bin.stable.latest.default;
       };
 
       packages = forAllSystems ({ pkgs }: {
