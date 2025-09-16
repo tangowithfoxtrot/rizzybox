@@ -21,6 +21,7 @@ use {
         ls::ls_command,
         mkdir::mkdir_command,
         nproc::nproc_command,
+        pathmunge::pathmunge_command,
         r#false::false_command,
         r#true::true_command,
         sh::sh_command,
@@ -178,6 +179,7 @@ fn main() -> Result<()> {
                 omp_num_limit,
                 omp_num_threads,
             } => nproc_command(all, ignore, omp_num_limit, omp_num_threads),
+            Commands::Pathmunge { command } => pathmunge_command(command),
             Commands::Sh {} => {
                 sh_command()?;
             }

@@ -67,6 +67,29 @@ pub struct Cli {
     pub list: bool,
 }
 
+#[derive(Clone, Debug, Subcommand)]
+pub enum PathmungeCommand {
+    /// Insert value at the end of $PATH
+    After {
+        /// The value to add to $PATH
+        path: String,
+
+        /// If value is found in $PATH, move it to the end
+        #[arg(long, short, alias = "move")]
+        force: bool,
+    },
+
+    /// Insert value at the beginning of $PATH
+    Before {
+        /// The value to add to $PATH
+        path: String,
+
+        /// If value is found in $PATH, move it to the beginning
+        #[arg(long, short, alias = "move")]
+        force: bool,
+    },
+}
+
 #[derive(Subcommand)]
 pub enum Commands {
     /// Display machine architecture
@@ -253,6 +276,12 @@ pub enum Commands {
         /// minimum threads to report
         #[arg(long, env = "OMP_NUM_THREADS")]
         omp_num_threads: Option<usize>,
+    },
+
+    /// Insert a path into $PATH, only if it isn't already there
+    Pathmunge {
+        #[command(subcommand)]
+        command: PathmungeCommand,
     },
 
     /// An incomplete shell

@@ -9,6 +9,7 @@ pub mod r#false;
 pub mod ls;
 pub mod mkdir;
 pub mod nproc;
+pub mod pathmunge;
 pub mod sh;
 pub mod sleep;
 pub mod stem;

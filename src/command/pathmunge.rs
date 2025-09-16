@@ -1,0 +1,53 @@
+use crate::cli::PathmungeCommand;
+
+struct PathEnv {
+    paths: Vec<String>,
+}
+
+impl std::fmt::Display for PathEnv {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.paths.join(":"))
+    }
+}
+
+impl Default for PathEnv {
+    fn default() -> Self {
+        let canonical_path =
+            std::env::var("PATH").unwrap_or("/bin:/sbin:/usr/bin:/usr/sbin".to_owned());
+        let path_set: std::collections::HashSet<&str> = canonical_path.split(':').collect();
+        let path_set: Vec<String> = path_set.iter().map(|&s| s.to_string()).collect();
+        Self { paths: path_set }
+    }
+}
+
+pub fn pathmunge_command(command: PathmungeCommand) {
+    let mut path_env = PathEnv::default();
+
+    match command {
+        PathmungeCommand::After { path: upath, force } => {
+            if path_env.paths.contains(&upath) && !upath.is_empty() {
+                if force {
+                    path_env.paths.retain(|path| path != &upath);
+                    let last = path_env.paths.len();
+                    path_env.paths.insert(last, upath);
+                }
+
+                println!("{path_env}");
+            } else {
+                println!("{path_env}:{upath}");
+            }
+        }
+        PathmungeCommand::Before { path: upath, force } => {
+            if path_env.paths.contains(&upath) || !upath.is_empty() {
+                if force {
+                    path_env.paths.retain(|path| path != &upath);
+                    path_env.paths.insert(0, upath);
+                }
+
+                println!("{path_env}");
+            } else {
+                println!("{upath}:{path_env}");
+            }
+        }
+    }
+}
