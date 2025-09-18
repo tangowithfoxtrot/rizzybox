@@ -88,6 +88,10 @@ pub enum PathmungeCommand {
         #[arg(long, short, alias = "move")]
         force: bool,
     },
+    Delete {
+        /// The value to delete from $PATH
+        path: String,
+    },
 }
 
 #[derive(Subcommand)]

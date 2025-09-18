@@ -1,3 +1,5 @@
+use std::io::{stdin, BufRead, IsTerminal};
+
 use crate::cli::PathmungeCommand;
 
 struct PathEnv {
@@ -12,11 +14,19 @@ impl std::fmt::Display for PathEnv {
 
 impl Default for PathEnv {
     fn default() -> Self {
-        let canonical_path =
-            std::env::var("PATH").unwrap_or("/bin:/sbin:/usr/bin:/usr/sbin".to_owned());
-        let path_set: Vec<&str> = canonical_path.split(':').collect();
-        let path_set: Vec<String> = path_set.iter().map(|&s| s.to_string()).collect();
-        Self { paths: path_set }
+        let stdin = stdin();
+        let path = if stdin.is_terminal() {
+            std::env::var("PATH").unwrap_or("/bin:/sbin:/usr/bin:/usr/sbin".to_owned())
+        } else {
+            let mut path = String::new();
+            let _ = stdin
+                .read_line(&mut path)
+                .expect("reading from stdin should not fail");
+            path
+        };
+        let path_vec: Vec<&str> = path.trim().split(':').collect();
+        let path_vec: Vec<String> = path_vec.iter().map(|&s| s.to_string()).collect();
+        Self { paths: path_vec }
     }
 }
 
@@ -48,6 +58,10 @@ pub fn pathmunge_command(command: PathmungeCommand) {
             } else {
                 println!("{upath}:{path_env}");
             }
+        }
+        PathmungeCommand::Delete { path: upath } => {
+            path_env.paths.retain(|path| path != &upath);
+            println!("{path_env}");
         }
     }
 }
