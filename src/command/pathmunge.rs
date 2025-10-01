@@ -1,4 +1,4 @@
-use std::io::{stdin, BufRead, IsTerminal};
+use std::io::{stdin, IsTerminal};
 
 use crate::cli::PathmungeCommand;
 
@@ -24,8 +24,7 @@ impl Default for PathEnv {
                 .expect("reading from stdin should not fail");
             path
         };
-        let path_vec: Vec<&str> = path.trim().split(':').collect();
-        let path_vec: Vec<String> = path_vec.iter().map(|&s| s.to_string()).collect();
+        let path_vec: Vec<String> = path.trim().split(':').map(|s| s.to_string()).collect();
         Self { paths: path_vec }
     }
 }
