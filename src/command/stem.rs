@@ -3,6 +3,8 @@ use std::collections::HashSet;
 const ENG_PREFIXES: [&str; 5] = ["ex", "pre", "post", "re", "un"];
 const ENG_SUFFIXES: [&str; 5] = ["ed", "ing", "er", "est", "ly"];
 
+const WORDLIST: &str = include_str!("../res/mthesaur.csv");
+
 enum EngArticle {
     A,
     An,
@@ -97,7 +99,7 @@ impl<'a> Word<'a> {
     }
 
     /// Constructs a `Word` object by analyzing the given word.
-    fn from(word: &'a str) -> Word<'a> {
+    fn from(word: &'a str, wordlist: &'a HashSet<&str>) -> Word<'a> {
         // don't stem articles
         if EngArticle::from_str(word).is_some() {
             return Self {
@@ -137,7 +139,6 @@ impl<'a> Word<'a> {
         // to find the shortest match for a real word and return that. This is not
         // totally accurate. "ingest" would actually just return "in" because it
         // meets these conditions.
-        let wordlist = read_wordlist();
         let mut potential_stem_matches: HashSet<&str> = HashSet::new();
         for word in wordlist {
             if word.starts_with(stem) {
@@ -164,12 +165,9 @@ impl std::fmt::Display for Word<'_> {
 }
 
 fn read_wordlist() -> HashSet<&'static str> {
-    // Include the wordlist in the binary.
-    // FIXME: this makes the binary much larger :/
-    let data = include_str!("../res/mthesaur.csv");
     let mut word_set: HashSet<&str> = HashSet::new();
 
-    for val in data.trim().split(',') {
+    for val in WORDLIST.trim().split(',') {
         word_set.insert(val);
     }
 
@@ -178,8 +176,10 @@ fn read_wordlist() -> HashSet<&'static str> {
 
 pub fn stem_command(nonewline: bool, unstemmed_words: &[String]) {
     let mut to_print = Vec::new();
+    let wordlist = read_wordlist();
+
     for unstemmed_word in unstemmed_words {
-        let word = Word::from(unstemmed_word);
+        let word = Word::from(unstemmed_word, &wordlist);
         to_print.push(word.stem);
     }
 
