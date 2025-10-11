@@ -84,7 +84,7 @@ fn main() -> Result<()> {
     if cli.install_self.is_some() {
         let installation_dir = cli.install_self.unwrap_or("/usr/local/bin".to_owned());
         for bin in INSTALLABLE_BINS {
-            ln_command(
+            let _ = ln_command(
                 true,
                 true,
                 "/bin/rizzybox",
@@ -230,7 +230,7 @@ fn main() -> Result<()> {
                 source,
                 destination,
             } => {
-                ln_command(force, symlink, &source, &destination);
+                ln_command(force, symlink, &source, &destination)?;
             }
             Commands::Ls { all, path } => {
                 ls_command(all, &path)?;
