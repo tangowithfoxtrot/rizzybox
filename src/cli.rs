@@ -62,6 +62,10 @@ pub struct Cli {
     #[arg(long)]
     pub install_with_sudo: bool,
 
+    /// create symlinks on the running system. primarily meant to be used for debugging in containers.
+    #[arg(long)]
+    pub install_self: bool,
+
     /// list included binaries
     #[arg(long)]
     pub list: bool,
@@ -151,6 +155,17 @@ pub enum Commands {
         shell: Option<Shell>,
     },
 
+    /// Wraps around the Docker CLI to inject Rizzybox into container
+    /// images. Allows for interactive debugging with minimal containers
+    #[clap(hide = true)]
+    Debug { command: Vec<String> },
+
+    /// Docker CLI expects plugins to return version metadata
+    /// when called with this arg. It is not intended to be
+    /// invoked directly
+    #[clap(hide = true)]
+    DockerCliPluginMetadata {},
+
     /// Output each NAME with its last non-slash component and trailing slashes
     /// removed; if NAME contains no /'s, output '.' (meaning the current directory).
     #[clap(verbatim_doc_comment)]
@@ -235,6 +250,19 @@ pub enum Commands {
     /// Do nothing and exit with a failure status
     False {},
 
+    /// Create symlinks to files (hard links are not supported yet)
+    Ln {
+        #[arg(long, short)]
+        force: bool,
+
+        #[arg(long, short)]
+        symlink: bool,
+
+        source: String,
+
+        destination: String,
+    },
+
     /// List information about the FILEs (the current directory by default)
     Ls {
         /// do not ignore entries starting with '.'
@@ -287,6 +315,11 @@ pub enum Commands {
         #[command(subcommand)]
         command: PathmungeCommand,
     },
+
+    /// Wraps around the Docker CLI to inject Rizzybox into container
+    /// images. Allows for interactive debugging with minimal containers
+    #[clap(hide = true)]
+    Rebug { command: Vec<String> },
 
     /// An incomplete shell
     Sh {},

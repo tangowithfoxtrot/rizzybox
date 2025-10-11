@@ -1,12 +1,18 @@
 mod cli;
 mod command;
 
-use std::env;
+use std::{
+    env::{self, current_exe},
+    fs::File,
+    process::Command,
+};
 
 use anyhow::{bail, Context, Result};
 use clap::{CommandFactory, Parser};
 use clap_complete::Shell;
 use rizzybox::consts::INSTALLABLE_BINS;
+
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 use {
     cli::{Cli, Commands},
@@ -18,6 +24,7 @@ use {
         echo::echo_command,
         env::env_command,
         expand::expand_command,
+        ln::ln_command,
         ls::ls_command,
         mkdir::mkdir_command,
         nproc::nproc_command,
@@ -65,15 +72,23 @@ fn main() -> Result<()> {
         println!("export RIZZYBOX_INSTALL_DIR=/usr/local/bin # change this to the desired installation path");
         for bin in INSTALLABLE_BINS {
             println!(
-                "{}ln -sf {} $RIZZYBOX_INSTALL_DIR/{}",
-                sudo_str,
+                "{sudo_str}ln -sf {} $RIZZYBOX_INSTALL_DIR/{bin}",
                 std::env::current_exe()
                     .context("rizzybox should exist")?
                     .display(),
-                bin,
             );
         }
         return Ok(());
+    }
+
+    if cli.install_self {
+        for bin in INSTALLABLE_BINS {
+            ln_command(true, true, "/bin/rizzybox", &format!("/bin/{bin}"));
+        }
+        // switch to rizzybox shell if we detect we're running in a container
+        if File::open("/.dockerenv").is_ok() {
+            let _ = sh_command();
+        }
     }
 
     if cli.list {
@@ -124,8 +139,42 @@ fn main() -> Result<()> {
                 let name = cmd.get_name().to_string();
                 clap_complete::generate(shell, &mut cmd, name, &mut std::io::stdout());
             }
+            Commands::Debug { command } | Commands::Rebug { command } => {
+                let path = current_exe().expect("failed to get path to current executable");
+                let binary_name = path.to_str().expect("binary name should be valid unicode");
+                let container_engine = if which_command(false, "docker", true)?.is_some() {
+                    "docker"
+                } else if which_command(false, "podman", true)?.is_some() {
+                    "podman"
+                } else {
+                    bail!("No container engine was detected. Please ensure that one of (docker, podman) are available in PATH")
+                };
+                let _cmd = Command::new(container_engine)
+                    .args([
+                        "run",
+                        "--rm",
+                        "-it",
+                        "-v",
+                        &format!("{binary_name}:/bin/rizzybox"),
+                        "--entrypoint=rizzybox",
+                    ])
+                    .args(if command.len() > 1 {
+                        command
+                    } else {
+                        vec![
+                            command.iter().map(|c| c.to_owned()).collect(),
+                            "--install-self".to_owned(),
+                        ]
+                    })
+                    .status()?;
+            }
             Commands::Dirname { name, zero } => {
                 dirname_command(&name, zero);
+            }
+            Commands::DockerCliPluginMetadata {} => {
+                println!(
+                    r#"{{ "SchemaVersion": "0.1.0", "Vendor": "If You're Reading This, You Shouldn't Be", "Version": "{VERSION}", "ShortDescription": "Poor folks' docker-debug" }}"#
+                );
             }
             Commands::Echo {
                 disable_backslash_escapes,
@@ -166,6 +215,14 @@ fn main() -> Result<()> {
             Commands::False {} => false_command(),
             Commands::Expand { file, tabs } => {
                 expand_command(&file, &tabs)?;
+            }
+            Commands::Ln {
+                force,
+                symlink,
+                source,
+                destination,
+            } => {
+                ln_command(force, symlink, &source, &destination);
             }
             Commands::Ls { all, path } => {
                 ls_command(all, &path)?;

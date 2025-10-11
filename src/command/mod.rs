@@ -6,6 +6,7 @@ pub mod echo;
 pub mod env;
 pub mod expand;
 pub mod r#false;
+pub mod ln;
 pub mod ls;
 pub mod mkdir;
 pub mod nproc;
