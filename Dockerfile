@@ -30,14 +30,9 @@ RUN cargo build --release && \
 
 # Create symlinks for commands provided by rizzybox
 RUN <<EOF
-  for bin in $(rizzybox --list); do
-    echo "ln -sf /bin/rizzybox /usr/local/bin/$bin"
-    ln -sf /bin/rizzybox /usr/local/bin/$bin
-  done
+  mkdir /rizzyboxbins
+  rizzybox --install-self /rizzyboxbins
 EOF
-
-# Verify that the symlinks are created
-RUN ls /usr/local/bin/sh || exit 1
 
 ###############################################
 #                  App stage                  #
@@ -45,8 +40,8 @@ RUN ls /usr/local/bin/sh || exit 1
 FROM scratch
 
 # Copy the built binary and symlinks from the builder stage
+COPY --from=builder /rizzyboxbins /bin
 COPY --from=builder /bin/rizzybox /bin/rizzybox
-COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Set the entrypoint and default command
 ENTRYPOINT ["/bin/rizzybox"]

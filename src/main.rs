@@ -81,9 +81,15 @@ fn main() -> Result<()> {
         return Ok(());
     }
 
-    if cli.install_self {
+    if cli.install_self.is_some() {
+        let installation_dir = cli.install_self.unwrap_or("/usr/local/bin".to_owned());
         for bin in INSTALLABLE_BINS {
-            ln_command(true, true, "/bin/rizzybox", &format!("/bin/{bin}"));
+            ln_command(
+                true,
+                true,
+                "/bin/rizzybox",
+                &format!("{installation_dir}/{bin}"),
+            );
         }
         // switch to rizzybox shell if we detect we're running in a container
         if File::open("/.dockerenv").is_ok() {
@@ -164,6 +170,8 @@ fn main() -> Result<()> {
                         vec![
                             command.iter().map(|c| c.to_owned()).collect(),
                             "--install-self".to_owned(),
+                            // FIXME: installing to /bin is problematic, but we need an empty directory that exists.
+                            "/bin".to_owned(),
                         ]
                     })
                     .status()?;

@@ -63,8 +63,8 @@ pub struct Cli {
     pub install_with_sudo: bool,
 
     /// create symlinks on the running system. primarily meant to be used for debugging in containers.
-    #[arg(long)]
-    pub install_self: bool,
+    #[arg(long, value_name = "INSTALLATION DIR")]
+    pub install_self: Option<String>,
 
     /// list included binaries
     #[arg(long)]
