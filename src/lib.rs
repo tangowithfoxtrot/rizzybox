@@ -3,7 +3,7 @@ use std::{fs::remove_file, string::String};
 pub mod consts {
     /// Binaries that can be installed with `--install`
     /// Example: `ln -sf /full/path/to/rizzybox /usr/local/bin/cat`
-    pub const INSTALLABLE_BINS: [&str; 20] = [
+    pub const INSTALLABLE_BINS: [&str; 21] = [
         "arch",
         "basename",
         "cat",
@@ -13,6 +13,7 @@ pub mod consts {
         "env",
         "expand",
         "false",
+        "ln",
         "ls",
         "mkdir",
         "nproc",
