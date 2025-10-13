@@ -83,17 +83,19 @@ fn main() -> Result<()> {
 
     if cli.install_self.is_some() {
         let installation_dir = cli.install_self.unwrap_or("/usr/local/bin".to_owned());
+        let path = current_exe().expect("failed to get path to current executable");
+        let binary_name = path.to_str().expect("binary name should be valid unicode");
         for bin in INSTALLABLE_BINS {
-            let _ = ln_command(
+            ln_command(
                 true,
                 true,
-                "/bin/rizzybox",
+                binary_name,
                 &format!("{installation_dir}/{bin}"),
-            );
+            )?;
         }
         // switch to rizzybox shell if we detect we're running in a container
         if File::open("/.dockerenv").is_ok() {
-            let _ = sh_command();
+            sh_command()?;
         }
     }
 
@@ -160,6 +162,8 @@ fn main() -> Result<()> {
                         "run",
                         "--rm",
                         "-it",
+                        "--user", // we need to be root to ensure symlinks can be created in /bin
+                        "0:0",
                         "-v",
                         &format!("{binary_name}:/bin/rizzybox"),
                         "--entrypoint=rizzybox",

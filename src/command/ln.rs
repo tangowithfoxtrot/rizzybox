@@ -2,9 +2,9 @@ use anyhow::{bail, Result};
 
 pub fn ln_command(force: bool, symlink: bool, source: &str, destination: &str) -> Result<()> {
     if force {
-        match std::fs::remove_file(destination) {
-            Ok(_) => {}
-            Err(e) => bail!("{e}"),
+        // if a file doesn't exist, remove_file will fail, so ensure it exists first
+        if std::fs::metadata(destination).is_ok() {
+            let _ = std::fs::remove_file(destination);
         }
     }
 
@@ -13,8 +13,7 @@ pub fn ln_command(force: bool, symlink: bool, source: &str, destination: &str) -
         match symlink_result {
             Ok(_) => Ok(()),
             Err(e) => {
-                eprintln!("Failed to create symlink: {e}");
-                std::process::exit(1);
+                bail!("Failed to create symlink: {e}");
             }
         }
     } else {
