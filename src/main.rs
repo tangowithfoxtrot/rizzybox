@@ -4,10 +4,11 @@ mod command;
 use std::{
     env::{self, current_exe},
     fs::File,
+    path::PathBuf,
     process::Command,
 };
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use clap::{CommandFactory, Parser};
 use clap_complete::Shell;
 use rizzybox::consts::INSTALLABLE_BINS;
@@ -24,16 +25,16 @@ use {
         echo::echo_command,
         env::env_command,
         expand::expand_command,
+        r#false::false_command,
         ln::ln_command,
         ls::ls_command,
         mkdir::mkdir_command,
         nproc::nproc_command,
         pathmunge::pathmunge_command,
-        r#false::false_command,
-        r#true::true_command,
         sh::sh_command,
         sleep::sleep_command,
         stem::stem_command,
+        r#true::true_command,
         uname::{arch_command, uname_command},
         which::which_command,
         yes::yes_command,
@@ -69,7 +70,9 @@ fn main() -> Result<()> {
     if cli.install | cli.install_with_sudo {
         println!("# to install rizzybox bins, paste the following in your shell:\n");
         // `export` works with more shells, like fish
-        println!("export RIZZYBOX_INSTALL_DIR=/usr/local/bin # change this to the desired installation path");
+        println!(
+            "export RIZZYBOX_INSTALL_DIR=/usr/local/bin # change this to the desired installation path"
+        );
         for bin in INSTALLABLE_BINS {
             println!(
                 "{sudo_str}ln -sf {} $RIZZYBOX_INSTALL_DIR/{bin}",
@@ -81,21 +84,47 @@ fn main() -> Result<()> {
         return Ok(());
     }
 
-    if cli.install_self.is_some() {
-        let installation_dir = cli.install_self.unwrap_or("/usr/local/bin".to_owned());
+    if let Some(installation_dir) = cli.install_self {
         let path = current_exe().expect("failed to get path to current executable");
         let binary_name = path.to_str().expect("binary name should be valid unicode");
-        for bin in INSTALLABLE_BINS {
-            ln_command(
-                true,
-                true,
-                binary_name,
-                &format!("{installation_dir}/{bin}"),
-            )?;
-        }
-        // switch to rizzybox shell if we detect we're running in a container
+
+        // assume that the existence of /.dockerenv means we're running in a container
         if File::open("/.dockerenv").is_ok() {
+            // create a dir for the symlinks and add it to PATH so that we don't conflict
+            // with any bins that may exist in the image
+            let rbin_dir = vec![PathBuf::from(installation_dir.to_string())];
+            mkdir_command(rbin_dir, true)?;
+
+            let mut path = std::env::var("PATH")
+                .unwrap_or(
+                    "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin".to_owned(),
+                )
+                .trim_end_matches(':')
+                .to_owned();
+            path.push_str(&format!(":{installation_dir}"));
+            unsafe { std::env::set_var("PATH", path) };
+
+            for bin in INSTALLABLE_BINS {
+                ln_command(
+                    true,
+                    true,
+                    binary_name,
+                    &format!("{installation_dir}/{bin}"),
+                )?;
+            }
+            // drop into an interactive shell session
             sh_command()?;
+        } else {
+            // we're not running in a container, so just create the symlinks
+            // where specified
+            for bin in INSTALLABLE_BINS {
+                ln_command(
+                    true,
+                    true,
+                    binary_name,
+                    &format!("{installation_dir}/{bin}"),
+                )?;
+            }
         }
     }
 
@@ -141,7 +170,10 @@ fn main() -> Result<()> {
             Commands::Clear {} => clear_command(),
             Commands::Completions { shell } => {
                 let Some(shell) = shell.or_else(Shell::from_env) else {
-                    bail!("Couldn't automatically detect the shell. Run `{} completions --help` for more info.", std::env::args().collect::<Vec<String>>()[0]);
+                    bail!(
+                        "Couldn't automatically detect the shell. Run `{} completions --help` for more info.",
+                        std::env::args().collect::<Vec<String>>()[0]
+                    );
                 };
                 let mut cmd = Cli::command();
                 let name = cmd.get_name().to_string();
@@ -155,9 +187,23 @@ fn main() -> Result<()> {
                 } else if which_command(false, "podman", true)?.is_some() {
                     "podman"
                 } else {
-                    bail!("No container engine was detected. Please ensure that one of (docker, podman) are available in PATH")
+                    bail!(
+                        "No container engine was detected. Please ensure that one of (docker, podman) are available in PATH"
+                    )
                 };
-                let _cmd = Command::new(container_engine)
+
+                let container_command = if command.len() > 1 {
+                    command // pass the user's `command` as an arg to rizzybox
+                } else {
+                    // invoke --install-self and drop into an interactive shell
+                    vec![
+                        command.iter().map(|c| c.to_owned()).collect(),
+                        "--install-self".to_owned(),
+                        "/tmp/rbin".to_owned(),
+                    ]
+                };
+
+                Command::new(container_engine)
                     .args([
                         "run",
                         "--rm",
@@ -166,18 +212,9 @@ fn main() -> Result<()> {
                         "0:0",
                         "-v",
                         &format!("{binary_name}:/bin/rizzybox"),
-                        "--entrypoint=rizzybox",
+                        "--entrypoint=/bin/rizzybox",
                     ])
-                    .args(if command.len() > 1 {
-                        command
-                    } else {
-                        vec![
-                            command.iter().map(|c| c.to_owned()).collect(),
-                            "--install-self".to_owned(),
-                            // FIXME: installing to /bin is problematic, but we need an empty directory that exists.
-                            "/bin".to_owned(),
-                        ]
-                    })
+                    .args(container_command)
                     .status()?;
             }
             Commands::Dirname { name, zero } => {
