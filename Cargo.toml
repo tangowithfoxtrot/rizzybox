@@ -4,10 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1.0.98"
+anyhow = "1.0.100"
 bat = { version = "0.25.0", default-features = false, features = ["regex-fancy"] }
-clap = { version = "4.5.41", features = ["derive", "env"] }
-clap_complete = "4.5.55"
+clap = { version = "4.5.49", features = ["derive", "env"] }
+clap_complete = "4.5.59"
 num_cpus = "1.17.0"
 rustix = { version = "1.1.2", default-features = false, features = ["process", "system"] }
 
