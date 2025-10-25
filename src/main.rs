@@ -64,7 +64,15 @@ fn main() -> Result<()> {
 
     let mut sudo_str = "";
     if cli.install_with_sudo {
-        sudo_str = "sudo ";
+        sudo_str = if which_command(false, "doas", true)?.is_some() {
+            "doas "
+        } else if which_command(false, "sudo", true)?.is_some() {
+            "sudo "
+        } else {
+            bail!(
+                "Neither doas nor sudo were found in PATH. Consider running as root with the --install arg instead."
+            )
+        };
     }
 
     if cli.install | cli.install_with_sudo {
