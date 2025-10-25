@@ -1,10 +1,13 @@
 use anyhow::Result;
 use clap::Parser;
 use std::{
+    collections::{HashMap, HashSet},
     env,
-    io::{stdin, stdout, Write},
+    io::{Write, stdin, stdout},
     process::Command,
 };
+
+use crate::command::{pathmunge::pathmunge_command, which::which_command};
 
 mod builtins {
     use clap::Parser;
@@ -56,73 +59,96 @@ pub fn sh_command() -> Result<()> {
         let args = &parts[1..];
 
         match command {
-            "cd" => match parse_command::<builtins::CdCommand>("cd", args) {
-                Ok(cmd) => {
-                    let target_dir = match cmd.dir.as_str() {
-                        "$HOME" | "~" => env::var("HOME").map_err(|_| "HOME not set"),
-                        "-" => env::var("OLDPWD").map_err(|_| "OLDPWD not set"),
-                        "." => Ok(".".to_string()), // Stay in current directory
-                        ".." => Ok("..".to_string()),
-                        _ => Ok(cmd.dir.clone()),
-                    };
-
-                    match target_dir {
-                        Ok(dir) => {
-                            // Store current directory as OLDPWD before changing directories
-                            if let Ok(current) = env::current_dir() {
-                                if let Some(path) = current.to_str() {
-                                    env::set_var("OLDPWD", path);
-                                }
-                            }
-
-                            if let Err(e) = env::set_current_dir(&dir) {
-                                eprintln!("cd: {dir}: {e}");
-                            }
-                        }
-                        Err(msg) => eprintln!("cd: {msg}"),
-                    }
-                }
-                Err(e) => eprintln!("{e}"),
-            },
-            "exit" => match parse_command::<builtins::ExitCommand>("exit", args) {
-                Ok(cmd) => std::process::exit(cmd.code),
-                Err(_) => return Ok(()),
-            },
-            "pwd" => match parse_command::<builtins::PwdCommand>("pwd", args) {
-                Ok(cmd) => {
-                    let current_dir =
-                        env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
-                    let path = current_dir.to_str().unwrap_or(".");
-                    if cmd.logical {
-                        println!("{path}");
-                    } else if cmd.physical {
-                        // Get the physical path
-                        let physical_path = std::fs::canonicalize(current_dir)
-                            .unwrap_or_else(|_| std::path::PathBuf::from("."));
-                        println!("{}", physical_path.display());
-                    } else {
-                        // Default behavior
-                        println!("{path}");
-                    }
-                }
-                Err(e) => eprintln!("{e}"),
-            },
-            _ => {
-                // Handle external commands
-                match Command::new(command).args(args).spawn() {
-                    Ok(mut child) => {
-                        child.wait()?;
-                    }
-                    Err(e) => {
-                        if e.kind() == std::io::ErrorKind::NotFound {
-                            eprintln!("{command}: command not found");
-                        } else {
-                            eprintln!("{command}: {e}");
-                        }
-                    }
+            "cd" => cd_command(args),
+            "exit" => {
+                if let Some(value) = exit_command(args) {
+                    return value;
                 }
             }
+            "pwd" => pwd_command(args),
+            "(" => {
+                eprintln!("opening paren");
+            }
+            ")" => {
+                eprintln!("closing paren");
+            }
+            _ => run_command(command, args)?,
         }
+    }
+}
+
+fn run_command(command: &str, args: &[&str]) -> Result<(), anyhow::Error> {
+    let _: () = match Command::new(command).args(args).spawn() {
+        Ok(mut child) => {
+            child.wait()?;
+        }
+        Err(e) => {
+            if e.kind() == std::io::ErrorKind::NotFound {
+                eprintln!("{command}: command not found");
+            } else {
+                eprintln!("{command}: {e}");
+            }
+        }
+    };
+    Ok(())
+}
+
+fn cd_command(args: &[&str]) {
+    match parse_command::<builtins::CdCommand>("cd", args) {
+        Ok(cmd) => {
+            let target_dir = match cmd.dir.as_str() {
+                "$HOME" | "~" => env::var("HOME").map_err(|_| "HOME not set"),
+                "-" => env::var("OLDPWD").map_err(|_| "OLDPWD not set"),
+                "." => Ok(".".to_string()), // Stay in current directory
+                ".." => Ok("..".to_string()),
+                _ => Ok(cmd.dir.clone()),
+            };
+
+            match target_dir {
+                Ok(dir) => {
+                    // Store current directory as OLDPWD before changing directories
+                    if let Ok(current) = env::current_dir()
+                        && let Some(path) = current.to_str()
+                    {
+                        unsafe { env::set_var("OLDPWD", path) };
+                    }
+
+                    if let Err(e) = env::set_current_dir(&dir) {
+                        eprintln!("cd: {dir}: {e}");
+                    }
+                }
+                Err(msg) => eprintln!("cd: {msg}"),
+            }
+        }
+        Err(e) => eprintln!("{e}"),
+    }
+}
+
+fn exit_command(args: &[&str]) -> Option<std::result::Result<(), anyhow::Error>> {
+    match parse_command::<builtins::ExitCommand>("exit", args) {
+        Ok(cmd) => std::process::exit(cmd.code),
+        Err(_) => Some(Ok(())),
+    }
+}
+
+fn pwd_command(args: &[&str]) {
+    match parse_command::<builtins::PwdCommand>("pwd", args) {
+        Ok(cmd) => {
+            let current_dir = env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+            let path = current_dir.to_str().unwrap_or(".");
+            if cmd.logical {
+                println!("{path}");
+            } else if cmd.physical {
+                // Get the physical path
+                let physical_path = std::fs::canonicalize(current_dir)
+                    .unwrap_or_else(|_| std::path::PathBuf::from("."));
+                println!("{}", physical_path.display());
+            } else {
+                // Default behavior
+                println!("{path}");
+            }
+        }
+        Err(e) => eprintln!("{e}"),
     }
 }
 

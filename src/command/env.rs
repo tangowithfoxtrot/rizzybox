@@ -1,4 +1,4 @@
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use bat::PrettyPrinter;
 use std::{
     env::{remove_var, set_current_dir, vars},
@@ -108,7 +108,7 @@ pub fn env_command(
         }
 
         for key in unset {
-            remove_var(key);
+            unsafe { remove_var(key) };
         }
 
         let mut command = Command::new(cmd.0);
