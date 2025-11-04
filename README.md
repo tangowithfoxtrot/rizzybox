@@ -33,6 +33,16 @@ dirname $(docker info | grep -iA3 Plugins | grep Path | awk '{ print $2 }' | hea
 sudo ln -sf $(which rizzybox) "$docker_plugins_dir/docker-debug"
 ```
 
+3. Use the Rizzybox shell to get an interactive session into a minimal container
+   image:
+
+```sh
+docker debug tangowithfoxtrot/scratch
+
+# or, if you symlinked it as docker-rebug:
+docker rebug tangowithfoxtrot/scratch
+```
+
 ## Goals
 
 1. Do something fun in Rust.
