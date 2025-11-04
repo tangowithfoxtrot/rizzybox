@@ -68,10 +68,10 @@ impl Drop for TestCleanup {
     fn drop(&mut self) {
         eprintln!("CLEANUP:");
         eprintln!("Removing file: {:?}", &self.file);
-        if let Some(file) = &self.file {
-            if let Err(e) = remove_file(file) {
-                eprintln!("Failed to remove file: {e}");
-            }
+        if let Some(file) = &self.file
+            && let Err(e) = remove_file(file)
+        {
+            eprintln!("Failed to remove file: {e}");
         }
     }
 }
