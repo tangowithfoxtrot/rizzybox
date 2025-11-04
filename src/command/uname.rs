@@ -215,3 +215,23 @@ pub fn uname_command(
         )
     );
 }
+
+#[cfg(test)]
+mod tests {
+    use assert_cmd::Command;
+
+    #[allow(unused_imports)]
+    use rizzybox::*;
+
+    #[test]
+    fn success() {
+        // Arrange
+        let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME")).unwrap();
+
+        // Act
+        cmd.arg("uname");
+
+        // Assert
+        cmd.assert().success();
+    }
+}

@@ -143,3 +143,25 @@ pub fn env_command(
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use assert_cmd::Command;
+
+    #[allow(unused_imports)]
+    use rizzybox::*;
+
+    #[test]
+    fn success() {
+        // Arrange
+        let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME")).unwrap();
+
+        // Act
+        cmd.arg("env");
+
+        // Assert
+        cmd.assert().success();
+        // TODO: make a better test
+        cmd.assert().stdout(predicates::str::contains("="));
+    }
+}

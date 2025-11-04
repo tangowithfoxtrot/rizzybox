@@ -49,3 +49,61 @@ pub fn yes_command(text: &str, amount: usize, duration: Option<f32>) {
 
     scheduler.join().expect("scheduler panicked");
 }
+
+#[cfg(test)]
+mod tests {
+    use assert_cmd::Command;
+    use std::time::SystemTime;
+
+    #[allow(unused_imports)]
+    use rizzybox::*;
+
+    // Because the `yes` command will run indefinitely by default, tests should always
+    // use either the --amount or --duration args so that the command can exit successfully
+
+    #[test]
+    fn success() {
+        // Arrange
+        let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME")).unwrap();
+
+        // Act
+        cmd.arg("yes").arg("--duration").arg("1");
+
+        // Assert
+        cmd.assert().success();
+    }
+
+    #[test]
+    fn amount_outputs_the_specified_amount_of_text() {
+        // Arrange
+        let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME")).unwrap();
+
+        // Act
+        cmd.arg("yes");
+        cmd.arg("--amount");
+        cmd.arg("789");
+
+        // Assert
+        cmd.assert().success();
+        cmd.assert()
+            .stdout(predicates::str::contains("y\n".repeat(789)));
+    }
+
+    #[test]
+    fn duration_runs_for_the_specified_duration() {
+        // Arrange
+        let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME")).unwrap();
+
+        // Act
+        cmd.arg("yes");
+        cmd.arg("--duration");
+        cmd.arg("1");
+
+        // Assert
+        let start = SystemTime::now();
+        cmd.assert().success();
+        let elapsed = start.elapsed().unwrap();
+        assert!(elapsed.as_secs() >= 1);
+        cmd.assert().stdout(predicates::str::contains("y"));
+    }
+}

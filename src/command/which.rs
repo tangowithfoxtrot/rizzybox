@@ -28,3 +28,23 @@ pub fn which_command(all_occurrences: bool, command: &str, silent: bool) -> Resu
     }
     Ok(None)
 }
+
+#[cfg(test)]
+mod tests {
+    use assert_cmd::Command;
+
+    #[allow(unused_imports)]
+    use rizzybox::*;
+
+    #[test]
+    fn success() {
+        // Arrange
+        let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME")).unwrap();
+
+        // Act
+        cmd.arg("which");
+
+        // Assert
+        cmd.assert().failure();
+    }
+}

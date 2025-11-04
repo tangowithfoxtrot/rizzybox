@@ -196,3 +196,112 @@ pub fn stem_command(nonewline: bool, unstemmed_words: &[String]) {
         println!();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #![expect(non_snake_case)]
+
+    use assert_cmd::Command;
+
+    #[allow(unused_imports)]
+    use rizzybox::*;
+
+    #[test]
+    fn success() {
+        // Arrange
+        let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME")).unwrap();
+
+        // Act
+        cmd.arg("stem");
+
+        // Assert
+        cmd.assert().success();
+        cmd.assert().stdout("\n");
+    }
+
+    #[test]
+    fn with_text_is_success() {
+        // Arrange
+        let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME")).unwrap();
+
+        // Act
+        cmd.arg("stem");
+        cmd.arg("henlo");
+
+        // Assert
+        cmd.assert().success();
+        cmd.assert().stdout("henlo\n");
+    }
+
+    #[test]
+    fn with_multiple_strings_is_success() {
+        // Arrange
+        let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME")).unwrap();
+
+        // Act
+        cmd.arg("stem");
+        cmd.arg("henlo");
+        cmd.arg("world");
+
+        // Assert
+        cmd.assert().success();
+        cmd.assert().stdout("henlo world\n");
+    }
+
+    #[test]
+    fn with___no_newline_does_not_output_newline() {
+        // Arrange
+        let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME")).unwrap();
+
+        // Act
+        cmd.arg("stem");
+        cmd.arg("--nonewline");
+        cmd.arg("preconfigured");
+
+        // Assert
+        cmd.assert().success();
+        cmd.assert().stdout("configure");
+    }
+
+    #[test]
+    /// stem will never have 100% accuracy. This test will only serve as a way
+    /// to detect regressions. Words in this test should always work.
+    fn stems_words_correctly() {
+        // Arrange
+        let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME")).unwrap();
+        let words = &[
+            "big",
+            "bigger",
+            "biggest",
+            "configure",
+            "configured",
+            "configuring",
+            "honestly",
+            "preconfigured",
+        ];
+
+        // Act
+        cmd.arg("stem");
+        cmd.args(words);
+
+        // Assert
+        cmd.assert().success();
+        cmd.assert()
+            .stdout("big big big configure configure configure honest configure\n");
+    }
+
+    #[test]
+    fn with_all_args() {
+        // Arrange
+        let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME")).unwrap();
+
+        // Act
+        cmd.arg("stem");
+        cmd.arg("-n"); // --nonewline
+        cmd.arg("biggest");
+
+        // Assert
+        cmd.assert().success();
+        cmd.assert().stdout("big");
+    }
+}

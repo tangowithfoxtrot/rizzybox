@@ -39,3 +39,43 @@ pub fn cat_command(
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use assert_cmd::Command;
+    use core::str;
+
+    #[allow(unused_imports)]
+    use rizzybox::*;
+
+    const FILE_TO_CAT: &str = "/etc/hosts";
+
+    #[test]
+    fn success() {
+        // Arrange
+        let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME")).unwrap();
+
+        // Act
+        cmd.arg("cat");
+        cmd.arg(FILE_TO_CAT);
+
+        // Assert
+        cmd.assert().success();
+        cmd.assert().stdout(predicates::str::contains("127.0.0.1"));
+    }
+
+    #[test]
+    fn from_stdin() {
+        // Arrange
+        let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME")).unwrap();
+
+        // Act
+        cmd.arg("cat");
+        cmd.write_stdin("woah hey there");
+
+        // Assert
+        cmd.assert().success();
+        cmd.assert()
+            .stdout(predicates::str::contains("woah hey there"));
+    }
+}
