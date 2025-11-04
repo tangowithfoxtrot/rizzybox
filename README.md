@@ -35,6 +35,16 @@ to that directory or invoke it with `sudo` or `doas`.
 
 ### Debug scratch or distroless container images
 
+Since Rizzybox is a set of coreutils with a **very** rudimentary,
+interactive-only shell, we can use it for debugging container images that are
+built from empty filesystems. Doing so requires using a build of Rizzybox that
+has been built with a statically-linked libc. If your docker host is not running
+Linux, you will need a **Linux** build of rizzybox to do this because we need to
+mount rizzybox inside of the container image at runtime to enable this
+functionality.
+
+#### Configure rizzybox to work as a docker plugin
+
 1. Locate your Docker plugins directory. This is usually in
    `~/.docker/cli-plugins` or `/usr/lib/docker/cli-plugins`. If you are unsure,
    you can inspect the output of `docker info` or use the following one-liner:
