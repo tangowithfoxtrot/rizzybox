@@ -16,6 +16,23 @@ A multicall coreutil binary written in Rust.
 
 ## Usage
 
+### As a multicall binary
+
+Rizzybox consists of a handful of coreutil implementations, as well as a few
+original coreutils (see the [stem](./src/command/stem.rs) command for an
+example). Each one can be executed with `rizzybox <util-name>`. For a list of
+supported commands, you can run `rizzybox --help` or `rizzybox --list`.
+
+### As rudimentary coreutils
+
+Rizzybox can be symlinked or "installed" in such a way that enables you to
+execute the various supported coreutils without needing to invoked them as
+`rizzybox <util-name>`. This allows you to simply run `cat` to invoke
+`rizzybox cat`. To do so, simply run
+`rizzybox --install-self <path-to-desired-installation-dir>`. The installation
+dir must be in `$PATH` to be used this way, and you will need write permissions
+to that directory or invoke it with `sudo` or `doas`.
+
 ### Debug scratch or distroless container images
 
 1. Locate your Docker plugins directory. This is usually in
