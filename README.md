@@ -16,7 +16,7 @@ A multicall coreutil binary written in Rust.
 
 ## Usage
 
-### Debug Scratch or Distroless Container Images
+### Debug scratch or distroless container images
 
 1. Locate your Docker plugins directory. This is usually in
    `~/.docker/cli-plugins` or `/usr/lib/docker/cli-plugins`. If you are unsure,
