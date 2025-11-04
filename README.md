@@ -45,6 +45,8 @@ Linux, you will need a **Linux** build of rizzybox to do this because we need to
 mount rizzybox inside of the container image at runtime to enable this
 functionality.
 
+[![asciicast](https://asciinema.org/a/NMRvMZTeXJKA4iDWPIYeNX6oe.svg)](https://asciinema.org/a/NMRvMZTeXJKA4iDWPIYeNX6oe)
+
 #### Configure rizzybox to work as a docker plugin
 
 1. Locate your Docker plugins directory. This is usually in
