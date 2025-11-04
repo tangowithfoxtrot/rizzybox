@@ -25,8 +25,8 @@ supported commands, you can run `rizzybox --help` or `rizzybox --list`.
 
 ### As rudimentary coreutils
 
-Rizzybox can be symlinked or "installed" in such a way that enables you to
-execute the various supported coreutils without needing to invoked them as
+Rizzybox can be symlinked or "installed" in such a way that allows you to
+execute the various supported coreutils without needing to invoke them as
 `rizzybox <util-name>`. This allows you to simply run `cat` to invoke
 `rizzybox cat`. To do so, simply run
 `rizzybox --install-self <path-to-desired-installation-dir>`. The installation
