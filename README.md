@@ -48,9 +48,11 @@ docker rebug tangowithfoxtrot/scratch
 1. Do something fun in Rust.
 2. Learn more about `coreutils`.
 3. Provide fancier alternatives to GNU coreutils with things like
-   syntax-highlighting and robust completions.
-4. Create original coreutils. See the [stem](./src/command/stem.rs) command for
-   an example.
+   syntax-highlighting and robust completions. For now, perfect GNU
+   compatibility is not a goal. In the future, this may change, but if you would
+   like a Rust coreutil project that _does_ strive for GNU compatibility, please
+   check out [uutils](https://github.com/uutils/coreutils).
+4. Create original coreutils.
 
 ### Acknowledgements
 
