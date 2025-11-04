@@ -14,6 +14,8 @@
 
 A multicall coreutil binary written in Rust.
 
+[![asciicast](https://asciinema.org/a/oruhe7BpwPa13QQyZse8bpJ4z.svg)](https://asciinema.org/a/oruhe7BpwPa13QQyZse8bpJ4z)
+
 ## Usage
 
 ### As a multicall binary
