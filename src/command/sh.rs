@@ -1,13 +1,10 @@
 use anyhow::Result;
 use clap::Parser;
 use std::{
-    collections::{HashMap, HashSet},
     env,
     io::{Write, stdin, stdout},
     process::Command,
 };
-
-use crate::command::{pathmunge::pathmunge_command, which::which_command};
 
 mod builtins {
     use clap::Parser;

@@ -2,7 +2,7 @@ use rustix::system::uname;
 
 #[derive(Default, Debug, Clone, Copy, clap::ValueEnum)]
 /// Enum for ISA format
-#[allow(non_camel_case_types)] // otherwise, we'd need serde or something similar
+#[expect(non_camel_case_types)] // otherwise, we'd need serde or something similar
 pub enum IsaFormat {
     /// Whatever the system returns
     #[default]
@@ -115,7 +115,7 @@ impl UtsName {
         }
     }
 
-    #[allow(clippy::too_many_arguments, clippy::fn_params_excessive_bools)]
+    #[expect(clippy::too_many_arguments, clippy::fn_params_excessive_bools)]
     /// Format output according to requested flags
     fn format_output(
         &self,
@@ -189,7 +189,7 @@ pub fn arch_command() {
     println!("{}", utsname.machine);
 }
 
-#[allow(clippy::too_many_arguments, clippy::fn_params_excessive_bools)]
+#[expect(clippy::too_many_arguments, clippy::fn_params_excessive_bools)]
 pub fn uname_command(
     all: bool,
     kernel: bool,

@@ -71,7 +71,6 @@ pub fn env_command(
     }
 
     if let Some(mut cmd) = command.split_first() {
-        #[allow(unused_assignments)] // this actually gets used in the if-let below
         let mut symlink_path_str: String = String::new();
 
         if let Some(arg) = argv0 {

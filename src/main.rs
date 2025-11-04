@@ -41,7 +41,7 @@ use {
     },
 };
 
-#[allow(clippy::too_many_lines)]
+#[expect(clippy::too_many_lines)]
 fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
     let binary_name = args.first().map(String::as_str).unwrap_or_default();

@@ -80,7 +80,6 @@ impl EngConsonant {
 }
 
 #[derive(Debug)]
-#[allow(dead_code)]
 struct Word<'a> {
     prefix: &'a str,
     stem: &'a str,
@@ -88,7 +87,7 @@ struct Word<'a> {
 }
 
 impl<'a> Word<'a> {
-    #[allow(dead_code)]
+    #[expect(dead_code)]
     /// Constructor for a default `Word` with empty fields.
     fn new() -> Word<'a> {
         Self {

@@ -1,6 +1,6 @@
 use core::str;
 use std::{
-    io::{stdout, BufWriter, Write},
+    io::{BufWriter, Write, stdout},
     sync::Arc,
     thread::{self},
     time::{Duration, Instant},
